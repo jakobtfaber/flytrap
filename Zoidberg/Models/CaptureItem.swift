@@ -11,7 +11,7 @@ enum CaptureItem: Codable, Equatable {
         case .text(let content):
             return content
         case .image(let filename, _):
-            return "![\(filename)](attachments/\(filename))"
+            return "![[attachments/\(filename)|500]]\n*\(filename)*"
         case .video(let filename, _):
             return "[\(filename)](attachments/\(filename))"
         case .link(let url):

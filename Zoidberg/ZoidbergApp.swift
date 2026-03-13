@@ -31,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         popover = NSPopover()
         popover.contentSize = NSSize(width: 320, height: 400)
-        popover.behavior = .transient
+        popover.behavior = .applicationDefined
         popover.animates = true
         popover.contentViewController = NSHostingController(
             rootView: CapturePanel(appState: appState, onToggleDictation: { [weak self] in
@@ -40,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         transcriptionService.delegate = self
+        appState.onDismiss = { [weak self] in
+            self?.popover.performClose(nil)
+        }
 
         if Permissions.checkAccessibility() == .denied {
             Permissions.requestAccessibility()

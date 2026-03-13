@@ -14,6 +14,9 @@ final class AppState: ObservableObject {
     @Published var lastDiscardedSession: CaptureSession?
     @Published var showUndoDiscard = false
 
+    /// Called when the panel should close (after save, discard, etc.)
+    var onDismiss: (() -> Void)?
+
     private var discardTimer: Timer?
     private var toastTimer: Timer?
 
@@ -94,6 +97,7 @@ final class AppState: ObservableObject {
             }
 
             clearSession()
+            onDismiss?()
         } catch {
             showToast("Failed to save — check vault path in settings", isError: true)
         }
@@ -127,6 +131,7 @@ final class AppState: ObservableObject {
         showUndoDiscard = true
         clearSession()
         deletePersistence()
+        onDismiss?()
 
         discardTimer?.invalidate()
         discardTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: false) { [weak self] _ in

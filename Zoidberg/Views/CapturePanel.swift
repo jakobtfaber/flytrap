@@ -132,14 +132,14 @@ struct CapturePanel: View {
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
         for provider in providers {
+            // Prefer file URLs over plain URLs so a dropped file isn't treated as a link
             if provider.hasItemConformingToTypeIdentifier("public.file-url") {
-                provider.loadItem(forTypeIdentifier: "public.file-url") { data, _ in
-                    guard let data = data as? Data,
-                          let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                    guard let url = url, url.isFileURL else { return }
                     let filename = url.lastPathComponent
                     let path = url.path
+                    let ext = url.pathExtension.lowercased()
                     Task { @MainActor in
-                        let ext = url.pathExtension.lowercased()
                         if ["png", "jpg", "jpeg", "gif", "webp", "heic", "tiff"].contains(ext) {
                             appState.addItem(.image(filename: filename, originalPath: path))
                         } else if ["mov", "mp4", "m4v", "avi", "mkv"].contains(ext) {
@@ -147,11 +147,9 @@ struct CapturePanel: View {
                         }
                     }
                 }
-            }
-            if provider.hasItemConformingToTypeIdentifier("public.url") {
-                provider.loadItem(forTypeIdentifier: "public.url") { data, _ in
-                    guard let data = data as? Data,
-                          let url = URL(dataRepresentation: data, relativeTo: nil),
+            } else if provider.hasItemConformingToTypeIdentifier("public.url") {
+                _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                    guard let url = url,
                           url.scheme == "http" || url.scheme == "https" else { return }
                     Task { @MainActor in
                         appState.addItem(.link(url))
