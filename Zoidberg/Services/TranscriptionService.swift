@@ -28,18 +28,26 @@ final class MacOSDictationService: NSObject, TranscriptionProvider {
         guard Permissions.checkSpeechRecognition() == .granted else {
             throw TranscriptionError.permissionDenied
         }
-        stopListening()
 
-        recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-        guard let request = recognitionRequest else {
-            throw TranscriptionError.setupFailed
+        // Clean up any previous session without triggering cancel errors
+        if isListening {
+            cleanupAudio()
         }
+
+        let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
+        request.requiresOnDeviceRecognition = false
+        recognitionRequest = request
 
         let inputNode = audioEngine.inputNode
-        let recordingFormat = inputNode.outputFormat(forBus: 0)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
+        // Use the native format from the input node — avoids sample rate mismatches
+        let recordingFormat = inputNode.outputFormat(forBus: 0)
+        guard recordingFormat.sampleRate > 0 && recordingFormat.channelCount > 0 else {
+            throw TranscriptionError.setupFailed
+        }
+
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: recordingFormat) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
         }
 
@@ -49,26 +57,44 @@ final class MacOSDictationService: NSObject, TranscriptionProvider {
 
         recognitionTask = speechRecognizer?.recognitionTask(with: request) { [weak self] result, error in
             guard let self = self else { return }
+
             if let result = result {
                 let text = result.bestTranscription.formattedString
                 if result.isFinal {
                     self.delegate?.transcriptionDidFinish(finalText: text)
-                    self.stopListening()
+                    self.cleanupAudio()
                 } else {
                     self.delegate?.transcriptionDidUpdate(text: text)
                 }
             }
-            if let error = error {
+
+            if let error = error as? NSError {
+                // Code 301 = user canceled, not a real error
+                if error.domain == "kLSRErrorDomain" && error.code == 301 {
+                    return
+                }
                 self.delegate?.transcriptionDidFail(error: error)
-                self.stopListening()
+                self.cleanupAudio()
             }
         }
     }
 
     func stopListening() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+        // End the audio stream gracefully so the recognizer can finalize
         recognitionRequest?.endAudio()
+
+        // Give the recognizer a moment to produce a final result,
+        // then clean up
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.cleanupAudio()
+        }
+    }
+
+    private func cleanupAudio() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        audioEngine.inputNode.removeTap(onBus: 0)
         recognitionRequest = nil
         recognitionTask?.cancel()
         recognitionTask = nil
