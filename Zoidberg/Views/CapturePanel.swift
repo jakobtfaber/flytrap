@@ -110,10 +110,21 @@ struct CapturePanel: View {
 
             Spacer()
 
-            Text("🤖")
-                .font(.system(size: 16))
+            // Status text
+            if let status = statusText {
+                Text(status)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(statusColor)
+                    .transition(.opacity)
+            }
+
+            Image(systemName: "cpu")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white)
         }
         .animation(.easeInOut(duration: 0.2), value: appState.isDictating)
+        .animation(.easeInOut(duration: 0.5), value: statusText)
+        .animation(.easeInOut(duration: 0.5), value: appState.isIdle)
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
         .overlay(alignment: .top) {
@@ -121,6 +132,30 @@ struct CapturePanel: View {
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 0.5)
         }
+    }
+
+    private var statusText: String? {
+        if appState.isDragOver {
+            return "drop here"
+        }
+        if appState.toastMessage != nil {
+            return appState.toastIsError ? "error" : "saved"
+        }
+        if appState.isDictating {
+            return "listening"
+        }
+        if appState.isIdle && appState.hasContent {
+            return "⌘ ↩ to save"
+        }
+        return nil
+    }
+
+    private var statusColor: Color {
+        if appState.isDragOver { return .blue }
+        if appState.toastMessage != nil { return appState.toastIsError ? .red : .green }
+        if appState.isDictating { return .red }
+        if appState.isIdle { return .green }
+        return .white.opacity(0.4)
     }
 
     private func headerButton(icon: String, isHovered: Binding<Bool>, action: @escaping () -> Void) -> some View {

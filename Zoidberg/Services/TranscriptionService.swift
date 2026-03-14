@@ -55,7 +55,7 @@ final class MacOSDictationService: NSObject, TranscriptionProvider {
             // Calculate RMS audio level, throttled to ~30fps
             guard let self = self else { return }
             let now = CFAbsoluteTimeGetCurrent()
-            guard now - self.lastLevelTime > 0.033 else { return }
+            guard now - self.lastLevelTime > 0.016 else { return }
             self.lastLevelTime = now
 
             guard let channelData = buffer.floatChannelData?[0] else { return }

@@ -123,6 +123,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.orderFrontRegardless()
         panel.makeKey()
         appState.openCount += 1
+        appState.resetIdle()
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.2

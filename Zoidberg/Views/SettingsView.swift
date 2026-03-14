@@ -4,6 +4,8 @@ struct SettingsView: View {
     @State private var vaultPath = AppSettings.vaultPath
     @State private var apiKey = AppSettings.claudeApiKey ?? ""
     @State private var launchAtLogin = AppSettings.launchAtLogin
+    @State private var autoCloseEnabled = AppSettings.autoCloseEnabled
+    @State private var autoCloseSeconds = AppSettings.autoCloseSeconds
 
     var body: some View {
         Form {
@@ -36,6 +38,17 @@ struct SettingsView: View {
             }
             Section("General") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
+                Toggle("Auto-close after inactivity", isOn: $autoCloseEnabled)
+                if autoCloseEnabled {
+                    HStack {
+                        Text("Close after")
+                        TextField("", value: $autoCloseSeconds, format: .number)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 60)
+                        Text("seconds")
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
         }
         .formStyle(.grouped)
@@ -49,6 +62,12 @@ struct SettingsView: View {
         }
         .onChange(of: launchAtLogin) { _, newValue in
             AppSettings.launchAtLogin = newValue
+        }
+        .onChange(of: autoCloseEnabled) { _, newValue in
+            AppSettings.autoCloseEnabled = newValue
+        }
+        .onChange(of: autoCloseSeconds) { _, newValue in
+            AppSettings.autoCloseSeconds = max(5, newValue)
         }
     }
 }

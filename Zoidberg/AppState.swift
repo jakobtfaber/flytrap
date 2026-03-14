@@ -15,9 +15,17 @@ final class AppState: ObservableObject {
     @Published var lastDiscardedSession: CaptureSession?
     @Published var showUndoDiscard = false
     @Published var openCount = 0
+    @Published var isIdle = false
+    @Published var isAutoClosing = false
 
     /// Called when the panel should close (after save, discard, etc.)
     var onDismiss: (() -> Void)?
+
+    private var idleTimer: Timer?
+    private var autoCloseTimer: Timer?
+    private let idleDelay: TimeInterval = 1.5
+    private let hintDuration: TimeInterval = 2.5
+    private var autoCloseDelay: TimeInterval { AppSettings.autoCloseSeconds }
 
     private var discardTimer: Timer?
     private var toastTimer: Timer?
@@ -34,19 +42,55 @@ final class AppState: ObservableObject {
 
     var hasContent: Bool { !currentSession.isEmpty }
 
+    /// Call whenever the user does something — resets the idle countdown
+    func resetIdle(showHint: Bool = false) {
+        isIdle = false
+        isAutoClosing = false
+        idleTimer?.invalidate()
+        autoCloseTimer?.invalidate()
+
+        // Save hint only after typing, and only if there's content
+        if showHint && hasContent {
+            idleTimer = Timer.scheduledTimer(withTimeInterval: idleDelay, repeats: false) { [weak self] _ in
+                Task { @MainActor in
+                    guard let self = self else { return }
+                    self.isIdle = true
+                    self.idleTimer = Timer.scheduledTimer(withTimeInterval: self.hintDuration, repeats: false) { [weak self] _ in
+                        Task { @MainActor in
+                            self?.isIdle = false
+                        }
+                    }
+                }
+            }
+        }
+
+        // Auto-close after configured seconds of inactivity
+        if AppSettings.autoCloseEnabled {
+            autoCloseTimer = Timer.scheduledTimer(withTimeInterval: autoCloseDelay, repeats: false) { [weak self] _ in
+                Task { @MainActor in
+                    self?.onDismiss?()
+                }
+            }
+        }
+    }
+
     func startDictation() {
-        // Snapshot existing text so new transcription appends after it
         textBeforeDictation = currentTextContent()
         isDictating = true
+        idleTimer?.invalidate()
+        autoCloseTimer?.invalidate()
+        isIdle = false
     }
 
     func stopDictation() {
         isDictating = false
+        resetIdle(showHint: true)
     }
 
     func addItem(_ item: CaptureItem) {
         currentSession.addItem(item)
         persistSession()
+        resetIdle()
     }
 
     /// Called with transcription text during dictation, or with user edits.
@@ -63,6 +107,9 @@ final class AppState: ObservableObject {
             currentSession.addItem(item)
         }
         persistSession()
+        if !isDictating {
+            resetIdle(showHint: true)
+        }
     }
 
     /// Called by the transcription service — appends new speech after existing text.

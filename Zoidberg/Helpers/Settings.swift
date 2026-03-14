@@ -33,4 +33,17 @@ enum AppSettings {
         get { defaults.string(forKey: "dictateHotkey") ?? "ctrl+shift+space" }
         set { defaults.set(newValue, forKey: "dictateHotkey") }
     }
+
+    static var autoCloseEnabled: Bool {
+        get { defaults.object(forKey: "autoCloseEnabled") as? Bool ?? true }
+        set { defaults.set(newValue, forKey: "autoCloseEnabled") }
+    }
+
+    static var autoCloseSeconds: Double {
+        get {
+            let val = defaults.double(forKey: "autoCloseSeconds")
+            return val > 0 ? val : 10
+        }
+        set { defaults.set(newValue, forKey: "autoCloseSeconds") }
+    }
 }
