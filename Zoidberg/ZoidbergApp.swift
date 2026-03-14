@@ -15,7 +15,7 @@ struct ZoidbergApp: App {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var panel: KeyablePanel!
-    private let appState = AppState()
+    let appState = AppState()
     private let hotkeyManager = HotkeyManager()
     private let transcriptionService = MacOSDictationService()
     private let escapeMonitor = EscapeKeyMonitor()
@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "desktopcomputer.and.arrow.down", accessibilityDescription: "Zoidberg")
+            button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "Zoidberg")
             button.action = #selector(togglePanel)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
@@ -184,8 +184,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func openSettings() {
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
         NSApp.activate(ignoringOtherApps: true)
+        appState.settingsRequested = true
     }
 
     @objc private func quit() {

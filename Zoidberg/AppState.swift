@@ -20,6 +20,7 @@ final class AppState: ObservableObject {
 
     /// Called when the panel should close (after save, discard, etc.)
     var onDismiss: (() -> Void)?
+    @Published var settingsRequested = false
 
     private var idleTimer: Timer?
     private var autoCloseTimer: Timer?

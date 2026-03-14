@@ -8,6 +8,7 @@ struct CapturePanel: View {
     @State private var micHover = false
     @State private var borderRotation: Double = -0.5
     @State private var borderOpacity: Double = 0
+    @Environment(\.openSettings) private var openSettings
     var onToggleDictation: (() -> Void)?
 
     var body: some View {
@@ -112,6 +113,12 @@ struct CapturePanel: View {
             let latest = currentTextContent()
             if latest != textInput {
                 textInput = latest
+            }
+        }
+        .onChange(of: appState.settingsRequested) { _, requested in
+            if requested {
+                openSettings()
+                appState.settingsRequested = false
             }
         }
     }
