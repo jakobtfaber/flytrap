@@ -14,34 +14,56 @@ struct ZoidbergApp: App {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    private var panel: NSPanel!
     private let appState = AppState()
     private let hotkeyManager = HotkeyManager()
     private let transcriptionService = MacOSDictationService()
     private let escapeMonitor = EscapeKeyMonitor()
 
+    private var isPanelVisible: Bool { panel.isVisible }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            // Use a robot-like SF Symbol. Replace with custom asset for final build.
             button.image = NSImage(systemSymbolName: "desktopcomputer.and.arrow.down", accessibilityDescription: "Zoidberg")
-            button.action = #selector(togglePopover)
+            button.action = #selector(togglePanel)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
 
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 320, height: 400)
-        popover.behavior = .applicationDefined
-        popover.animates = true
-        popover.contentViewController = NSHostingController(
+        let hostingController = NSHostingController(
             rootView: CapturePanel(appState: appState, onToggleDictation: { [weak self] in
                 self?.toggleDictation()
             })
         )
 
+        panel = KeyablePanel(
+            contentRect: NSRect(x: 0, y: 0, width: 340, height: 120),
+            styleMask: [.nonactivatingPanel],
+            backing: .buffered,
+            defer: true
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = NSColor(red: 0.06, green: 0.04, blue: 0.1, alpha: 1)
+        panel.hasShadow = false
+        panel.level = .popUpMenu
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.isMovableByWindowBackground = false
+        panel.isFloatingPanel = true
+        panel.becomesKeyOnlyIfNeeded = false
+        panel.appearance = NSAppearance(named: .darkAqua)
+        panel.contentViewController = hostingController
+
+        // Round the entire window frame (includes the window background)
+        if let frameView = panel.contentView?.superview {
+            frameView.wantsLayer = true
+            frameView.layer?.cornerRadius = 40
+            frameView.layer?.cornerCurve = .continuous
+            frameView.layer?.masksToBounds = true
+        }
+
         transcriptionService.delegate = self
         appState.onDismiss = { [weak self] in
-            self?.popover.performClose(nil)
+            self?.hidePanel()
         }
 
         if Permissions.checkAccessibility() == .denied {
@@ -49,7 +71,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         hotkeyManager.onTogglePanel = { [weak self] in
-            self?.togglePopover()
+            self?.togglePanel()
         }
         hotkeyManager.onToggleDictation = { [weak self] in
             self?.toggleDictation()
@@ -57,7 +79,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyManager.register()
 
         escapeMonitor.onTap = { [weak self] in
-            self?.popover.performClose(nil)
+            self?.hidePanel()
         }
         escapeMonitor.onHold = { [weak self] in
             guard let self = self else { return }
@@ -68,25 +90,72 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         escapeMonitor.start()
     }
 
-    @objc private func togglePopover() {
+    @objc private func togglePanel() {
         let event = NSApp.currentEvent
         if event?.type == .rightMouseUp {
             showContextMenu()
             return
         }
 
-        if popover.isShown {
-            popover.performClose(nil)
+        if isPanelVisible {
+            hidePanel()
         } else {
-            guard let button = statusItem.button else { return }
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
-            popover.contentViewController?.view.window?.makeKey()
+            showPanel()
         }
     }
 
+    private func showPanel() {
+        guard let button = statusItem.button,
+              let buttonWindow = button.window else { return }
+
+        let buttonRect = button.convert(button.bounds, to: nil)
+        let screenRect = buttonWindow.convertToScreen(buttonRect)
+
+        let panelWidth: CGFloat = 340
+        let panelX = screenRect.midX - panelWidth / 2
+        let panelY = screenRect.minY - 4
+
+        panel.setFrameTopLeftPoint(NSPoint(x: panelX, y: panelY))
+
+        // Animate in: fade + slide down
+        panel.alphaValue = 0
+        let finalFrame = panel.frame
+        panel.setFrame(
+            NSRect(x: finalFrame.origin.x, y: finalFrame.origin.y + 6,
+                   width: finalFrame.width, height: finalFrame.height),
+            display: false
+        )
+        panel.orderFrontRegardless()
+        panel.makeKey()
+
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 1
+            panel.animator().setFrame(finalFrame, display: true)
+        }
+    }
+
+    private func hidePanel() {
+        let frame = panel.frame
+        NSAnimationContext.runAnimationGroup({ ctx in
+            ctx.duration = 0.15
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            panel.animator().alphaValue = 0
+            panel.animator().setFrame(
+                NSRect(x: frame.origin.x, y: frame.origin.y + 6,
+                       width: frame.width, height: frame.height),
+                display: true
+            )
+        }, completionHandler: { [weak self] in
+            self?.panel.orderOut(nil)
+            self?.panel.alphaValue = 1
+        })
+    }
+
     private func toggleDictation() {
-        if !popover.isShown {
-            togglePopover()
+        if !isPanelVisible {
+            showPanel()
         }
 
         if transcriptionService.isListening {
@@ -132,6 +201,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func quit() {
         NSApplication.shared.terminate(nil)
     }
+}
+
+/// NSPanel subclass that accepts key status without a title bar.
+final class KeyablePanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
 }
 
 extension AppDelegate: TranscriptionDelegate {

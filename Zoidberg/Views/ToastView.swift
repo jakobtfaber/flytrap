@@ -6,12 +6,12 @@ struct ToastView: View {
 
     var body: some View {
         Text(message)
-            .font(.system(size: 11))
+            .font(.system(size: 11, weight: .medium, design: .monospaced))
             .foregroundColor(isError ? .white : Color(.systemGreen))
-            .padding(.horizontal, 14)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
             .frame(maxWidth: .infinity)
-            .background(isError ? Color.red.opacity(0.9) : Color.green.opacity(0.15))
+            .background(isError ? Color.red.opacity(0.25) : Color.green.opacity(0.1))
             .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 }
