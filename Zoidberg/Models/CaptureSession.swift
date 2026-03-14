@@ -14,6 +14,10 @@ struct CaptureSession: Codable {
         items.append(item)
     }
 
+    mutating func removeItem(_ item: CaptureItem) {
+        items.removeAll { $0 == item }
+    }
+
     mutating func clear() {
         items.removeAll()
     }

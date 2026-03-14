@@ -12,11 +12,35 @@ struct CapturePanel: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            contentArea
-            if let toast = appState.toastMessage {
-                ToastView(message: toast, isError: appState.toastIsError)
+            textArea
+            // Attachments + footer with drop zone overlay
+            VStack(spacing: 0) {
+                attachmentsArea
+                Spacer(minLength: 0)
+                if let toast = appState.toastMessage {
+                    ToastView(message: toast, isError: appState.toastIsError)
+                }
+                footer
             }
-            footer
+            .frame(minHeight: 60)
+            .overlay {
+                if appState.isDragOver {
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .strokeBorder(
+                            style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [4, 4])
+                        )
+                        .foregroundColor(.blue.opacity(0.5))
+                        .background(
+                            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                .fill(Color.blue.opacity(0.05))
+                        )
+                        .padding(.horizontal, 10)
+                        .padding(.bottom, 10)
+                        .padding(.top, 4)
+                        .transition(.opacity)
+                        .animation(.easeInOut(duration: 0.15), value: appState.isDragOver)
+                }
+            }
         }
         .frame(width: 340)
         .frame(minHeight: 80)
@@ -57,6 +81,13 @@ struct CapturePanel: View {
         }
         .onAppear {
             textInput = currentTextContent()
+        }
+        .onChange(of: appState.isDragOver) { _, isDragging in
+            if isDragging {
+                appState.pauseIdle()
+            } else {
+                appState.resetIdle()
+            }
         }
         .onChange(of: appState.openCount) { _, _ in
             // Reset and sweep the shimmer across the border
@@ -126,12 +157,8 @@ struct CapturePanel: View {
         .animation(.easeInOut(duration: 0.5), value: statusText)
         .animation(.easeInOut(duration: 0.5), value: appState.isIdle)
         .padding(.horizontal, 20)
-        .padding(.vertical, 8)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(Color.white.opacity(0.06))
-                .frame(height: 0.5)
-        }
+        .padding(.top, 8)
+        .padding(.bottom, 14)
     }
 
     private var statusText: String? {
@@ -175,8 +202,8 @@ struct CapturePanel: View {
         .animation(.easeOut(duration: 0.15), value: isHovered.wrappedValue)
     }
 
-    private var contentArea: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private var textArea: some View {
+        VStack(alignment: .leading, spacing: 0) {
             if appState.showUndoDiscard {
                 Button("Undo discard") {
                     appState.undoDiscard()
@@ -195,22 +222,23 @@ struct CapturePanel: View {
                 .onChange(of: textInput) { _, newValue in
                     appState.updateText(newValue)
                 }
-            ForEach(Array(nonTextItems().enumerated()), id: \.offset) { _, item in
-                CaptureItemRow(item: item)
-            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 24)
-        .padding(.bottom, 8)
-        .opacity(appState.isDragOver ? 0.5 : 1)
-        .overlay(
-            appState.isDragOver ?
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [6]))
-                .foregroundColor(.blue.opacity(0.6))
-                .padding(8)
-            : nil
-        )
+        .padding(.bottom, 4)
+    }
+
+    private var attachmentsArea: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(Array(nonTextItems().enumerated()), id: \.offset) { index, item in
+                CaptureItemRow(item: item, onDelete: {
+                    appState.removeItem(at: item)
+                })
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, nonTextItems().isEmpty ? 0 : 4)
+        .padding(.bottom, nonTextItems().isEmpty ? 0 : 4)
     }
 
     private func currentTextContent() -> String {
@@ -256,3 +284,4 @@ struct CapturePanel: View {
         return true
     }
 }
+

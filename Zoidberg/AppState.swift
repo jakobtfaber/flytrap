@@ -74,6 +74,12 @@ final class AppState: ObservableObject {
         }
     }
 
+    func pauseIdle() {
+        idleTimer?.invalidate()
+        autoCloseTimer?.invalidate()
+        isIdle = false
+    }
+
     func startDictation() {
         textBeforeDictation = currentTextContent()
         isDictating = true
@@ -91,6 +97,11 @@ final class AppState: ObservableObject {
         currentSession.addItem(item)
         persistSession()
         resetIdle()
+    }
+
+    func removeItem(at item: CaptureItem) {
+        currentSession.removeItem(item)
+        persistSession()
     }
 
     /// Called with transcription text during dictation, or with user edits.

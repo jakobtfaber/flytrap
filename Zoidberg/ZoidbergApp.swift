@@ -37,7 +37,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         panel = KeyablePanel(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 120),
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 80),
             styleMask: [.nonactivatingPanel, .resizable],
             backing: .buffered,
             defer: true
