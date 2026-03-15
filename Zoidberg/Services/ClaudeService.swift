@@ -1,12 +1,6 @@
 // Zoidberg/Services/ClaudeService.swift
 import Foundation
 
-struct EnhanceResult {
-    let title: String
-    let folder: String
-    let cleanedText: String?
-}
-
 final class ClaudeService {
     let apiKey: String?
     private let baseURL = "https://api.anthropic.com/v1/messages"
@@ -19,10 +13,8 @@ final class ClaudeService {
         self.apiKey = apiKey
     }
 
-    func enhance(session: CaptureSession) async -> EnhanceResult? {
+    func cleanup(text: String) async -> String? {
         guard isEnabled, let apiKey = apiKey else { return nil }
-
-        let prompt = Self.buildEnhancePrompt(for: session)
 
         var request = URLRequest(url: URL(string: baseURL)!)
         request.httpMethod = "POST"
@@ -33,9 +25,9 @@ final class ClaudeService {
 
         let body: [String: Any] = [
             "model": model,
-            "max_tokens": 1024,
+            "max_tokens": 2048,
             "messages": [
-                ["role": "user", "content": prompt]
+                ["role": "user", "content": "Format this into clean notes. Fix punctuation, spacing, and structure. Don't change meaning. Reply with ONLY the formatted text, nothing else.\n\n\(text)"]
             ]
         ]
 
@@ -43,50 +35,14 @@ final class ClaudeService {
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
             let (data, response) = try await URLSession.shared.data(for: request)
             guard let httpResponse = response as? HTTPURLResponse,
-                  httpResponse.statusCode == 200 else { return nil }
-            return try Self.parseEnhanceResponse(data)
+                  httpResponse.statusCode == 200,
+                  let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let content = json["content"] as? [[String: Any]],
+                  let firstBlock = content.first,
+                  let result = firstBlock["text"] as? String else { return nil }
+            return result
         } catch {
             return nil
         }
     }
-
-    static func buildEnhancePrompt(for session: CaptureSession) -> String {
-        let content = session.items.map { $0.toMarkdown() }.joined(separator: "\n")
-        return """
-        You are organizing a quick capture note for an Obsidian vault. \
-        The user captured the following content:
-
-        ---
-        \(content)
-        ---
-
-        Respond with ONLY a JSON object (no markdown fencing) with these fields:
-        - "title": A concise, descriptive title for this note (3-8 words)
-        - "folder": A folder name for organizing this note (e.g. "Projects", "Ideas", "Research", "Tasks", "Personal")
-        - "cleanedText": If the text appears to be dictated (run-on, missing punctuation), \
-        clean it up with proper punctuation and paragraph breaks. If the text is already clean, \
-        set this to null.
-        """
-    }
-
-    static func parseEnhanceResponse(_ data: Data) throws -> EnhanceResult {
-        guard let response = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = response["content"] as? [[String: Any]],
-              let firstBlock = content.first,
-              let text = firstBlock["text"] as? String else {
-            throw ClaudeServiceError.invalidResponse
-        }
-        guard let jsonData = text.data(using: .utf8),
-              let result = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-              let title = result["title"] as? String,
-              let folder = result["folder"] as? String else {
-            throw ClaudeServiceError.invalidResponse
-        }
-        let cleanedText = result["cleanedText"] as? String
-        return EnhanceResult(title: title, folder: folder, cleanedText: cleanedText)
-    }
-}
-
-enum ClaudeServiceError: Error {
-    case invalidResponse
 }

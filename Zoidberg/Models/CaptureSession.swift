@@ -52,7 +52,7 @@ struct CaptureSession: Codable {
 
     func fallbackFilename() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd-HHmm"
-        return "\(formatter.string(from: createdAt))-capture.md"
+        formatter.dateFormat = "yyyy-MM-dd-h:mma"
+        return "\(formatter.string(from: createdAt)).md"
     }
 }

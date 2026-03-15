@@ -4,7 +4,7 @@ final class EscapeKeyMonitor {
     private var keyDownMonitor: Any?
     private var keyUpMonitor: Any?
     private var holdTimer: Timer?
-    private var isHolding = false
+    private(set) var isHolding = false
     private var didTriggerHold = false
 
     var onTap: (() -> Void)?

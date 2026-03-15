@@ -109,8 +109,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
         }
         escapeMonitor.onHoldStart = { [weak self] in
-            Task { @MainActor in
-                self?.appState.isDiscardHolding = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                guard let self = self, self.escapeMonitor.isHolding else { return }
+                self.appState.isDiscardHolding = true
             }
         }
         escapeMonitor.onHoldCancel = { [weak self] in

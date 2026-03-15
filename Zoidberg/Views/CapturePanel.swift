@@ -85,9 +85,13 @@ struct CapturePanel: View {
             handleDrop(providers)
         }
         .background(
-            Button("") { appState.save() }
-                .keyboardShortcut(.return, modifiers: .command)
-                .hidden()
+            Group {
+                Button("") { appState.save() }
+                    .keyboardShortcut(.return, modifiers: .command)
+                Button("") { appState.cleanupWithClaude() }
+                    .keyboardShortcut("k", modifiers: .command)
+            }
+            .hidden()
         )
         .onAppear {
             textInput = currentTextContent()
@@ -175,25 +179,29 @@ struct CapturePanel: View {
     }
 
     private var statusText: String? {
+        if appState.isCleaning {
+            return "Cleaning up..."
+        }
         if appState.isDiscardHolding {
-            return "hold ⎋ to discard"
+            return "Hold ⎋ to discard"
         }
         if appState.isDragOver {
-            return "drop here"
+            return "Drop here"
         }
         if appState.toastMessage != nil {
-            return appState.toastIsError ? "error" : "saved"
+            return appState.toastIsError ? "Error" : "Saved"
         }
         if appState.isDictating {
-            return "listening"
+            return "Listening"
         }
         if appState.isIdle && appState.hasContent {
-            return "⌘ ↩ to save"
+            return "Press ⌘ ↩ to save"
         }
         return nil
     }
 
     private var statusColor: Color {
+        if appState.isCleaning { return .purple }
         if appState.isDiscardHolding { return .red }
         if appState.isDragOver { return .blue }
         if appState.toastMessage != nil { return appState.toastIsError ? .red : .green }

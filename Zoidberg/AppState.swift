@@ -14,6 +14,7 @@ final class AppState: ObservableObject {
     @Published var toastIsError = false
     @Published var openCount = 0
     @Published var isIdle = false
+    @Published var isCleaning = false
     @Published var isAutoClosing = false
     @Published var isDiscardHolding = false
 
@@ -141,6 +142,28 @@ final class AppState: ObservableObject {
         return ""
     }
 
+    func cleanupWithClaude() {
+        let text = currentTextContent()
+        guard !text.isEmpty, !isCleaning, AppSettings.hasClaudeApiKey else { return }
+
+        isCleaning = true
+        let claude = ClaudeService(apiKey: AppSettings.claudeApiKey)
+
+        Task {
+            if let cleaned = await claude.cleanup(text: text) {
+                await MainActor.run {
+                    updateText(cleaned)
+                    isCleaning = false
+                }
+            } else {
+                await MainActor.run {
+                    isCleaning = false
+                    showToast("Cleanup failed", isError: true)
+                }
+            }
+        }
+    }
+
     func save() {
         onStopDictation?()
 
@@ -148,45 +171,15 @@ final class AppState: ObservableObject {
         let writer = VaultWriter(vaultPath: vaultPath)
 
         do {
-            let result = try writer.save(session: currentSession, title: nil, folder: nil)
-            showToast("✓ Saved to vault", isError: false)
-
-            if AppSettings.hasClaudeApiKey {
-                let session = currentSession
-                let filePath = result.filePath
-                Task.detached {
-                    await self.enhanceInBackground(session: session, filePath: filePath, writer: writer)
-                }
-            }
-
+            let _ = try writer.save(session: currentSession, title: nil, folder: nil)
+            showToast("Saved to vault", isError: false)
             clearSession()
-            onDismiss?()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.onDismiss?()
+            }
         } catch {
             showToast("Failed to save — check vault path in settings", isError: true)
         }
-    }
-
-    private func enhanceInBackground(session: CaptureSession, filePath: String, writer: VaultWriter) async {
-        let claude = ClaudeService(apiKey: AppSettings.claudeApiKey)
-        guard let result = await claude.enhance(session: session) else { return }
-
-        var enhancedSession = CaptureSession()
-        for item in session.items {
-            if case .text = item, let cleaned = result.cleanedText {
-                enhancedSession.addItem(.text(cleaned))
-            } else {
-                enhancedSession.addItem(item)
-            }
-        }
-
-        let enhancedMarkdown = enhancedSession.toMarkdown(title: result.title)
-
-        try? writer.moveToEnhancedLocation(
-            from: filePath,
-            enhancedMarkdown: enhancedMarkdown,
-            title: result.title,
-            folder: result.folder
-        )
     }
 
     func discardSession() {
