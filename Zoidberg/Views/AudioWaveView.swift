@@ -13,7 +13,7 @@ struct AudioWaveView: View {
                 WaveBar(level: barLevels[i], index: i)
             }
         }
-        .frame(width: 30, height: 22)
+        .frame(height: 22)
         .onChange(of: level) { _, newLevel in
             for i in 0..<barCount {
                 barLevels[i] = newLevel

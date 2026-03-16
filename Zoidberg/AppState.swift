@@ -147,6 +147,7 @@ final class AppState: ObservableObject {
         guard !text.isEmpty, !isCleaning, AppSettings.hasClaudeApiKey else { return }
 
         isCleaning = true
+        pauseIdle()
         let claude = ClaudeService(apiKey: AppSettings.claudeApiKey)
 
         Task {
@@ -154,11 +155,13 @@ final class AppState: ObservableObject {
                 await MainActor.run {
                     updateText(cleaned)
                     isCleaning = false
+                    resetIdle(showHint: true)
                 }
             } else {
                 await MainActor.run {
                     isCleaning = false
                     showToast("Cleanup failed", isError: true)
+                    resetIdle()
                 }
             }
         }

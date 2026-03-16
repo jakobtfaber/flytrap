@@ -14,34 +14,24 @@ struct CapturePanel: View {
         VStack(spacing: 0) {
             textArea
                 .frame(minHeight: 40)
-            // Attachments + footer with drop zone overlay
-            VStack(spacing: 0) {
-                attachmentsArea
-                Spacer(minLength: 0)
-                if let toast = appState.toastMessage {
-                    ToastView(message: toast, isError: appState.toastIsError)
+            attachmentsArea
+            footer
+                .overlay {
+                    if appState.isDragOver {
+                        RoundedRectangle(cornerRadius: 30, style: .continuous)
+                            .strokeBorder(
+                                style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [4, 3])
+                            )
+                            .foregroundColor(.blue.opacity(0.5))
+                            .background(
+                                RoundedRectangle(cornerRadius: 30, style: .continuous)
+                                    .fill(Color.blue.opacity(0.15))
+                            )
+                            .padding(4)
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 0.15), value: appState.isDragOver)
+                    }
                 }
-                footer
-            }
-            .frame(minHeight: 60)
-            .overlay {
-                if appState.isDragOver {
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .strokeBorder(
-                            style: StrokeStyle(lineWidth: 1.5, lineCap: .round, dash: [4, 4])
-                        )
-                        .foregroundColor(.blue.opacity(0.5))
-                        .background(
-                            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                                .fill(Color.blue.opacity(0.05))
-                        )
-                        .padding(.horizontal, 10)
-                        .padding(.bottom, 10)
-                        .padding(.top, 4)
-                        .transition(.opacity)
-                        .animation(.easeInOut(duration: 0.15), value: appState.isDragOver)
-                }
-            }
         }
         .frame(width: 340)
         .frame(minHeight: 80)
@@ -134,8 +124,25 @@ struct CapturePanel: View {
     }
 
     private var footer: some View {
-        HStack(spacing: 6) {
-            // Mic button — stays in place, changes color
+        HStack(spacing: 8) {
+            Image(systemName: "cpu")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(statusColor)
+            
+            if let status = statusText {
+                Text(status)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(statusColor)
+                    .transition(.opacity)
+            }
+            
+            Spacer()
+            
+            if appState.isDictating {
+                AudioWaveView(level: appState.audioLevel)
+                    .transition(.opacity)
+            }
+
             Button(action: { onToggleDictation?() }) {
                 Image(systemName: "mic.fill")
                     .font(.system(size: 13, weight: .medium))
@@ -149,33 +156,12 @@ struct CapturePanel: View {
             }
             .buttonStyle(.plain)
             .onHover { micHover = $0 }
-
-            // Waveform fades in when dictating
-            if appState.isDictating {
-                AudioWaveView(level: appState.audioLevel)
-                    .transition(.opacity)
-            }
-
-            Spacer()
-
-            // Status text
-            if let status = statusText {
-                Text(status)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(statusColor)
-                    .transition(.opacity)
-            }
-
-            Image(systemName: "cpu")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white)
         }
         .animation(.easeInOut(duration: 0.2), value: appState.isDictating)
         .animation(.easeInOut(duration: 0.5), value: statusText)
         .animation(.easeInOut(duration: 0.5), value: appState.isIdle)
+        .padding(.vertical, 12)
         .padding(.horizontal, 20)
-        .padding(.top, 8)
-        .padding(.bottom, 14)
     }
 
     private var statusText: String? {
@@ -207,7 +193,7 @@ struct CapturePanel: View {
         if appState.toastMessage != nil { return appState.toastIsError ? .red : .green }
         if appState.isDictating { return .red }
         if appState.isIdle { return .green }
-        return .white.opacity(0.4)
+        return .white.opacity(0.85)
     }
 
     private func headerButton(icon: String, isHovered: Binding<Bool>, action: @escaping () -> Void) -> some View {
@@ -233,6 +219,7 @@ struct CapturePanel: View {
                 .font(.system(size: 13, design: .monospaced))
                 .foregroundColor(.white.opacity(0.9))
                 .scrollContentBackground(.hidden)
+                .scrollIndicators(.hidden)
                 .frame(minHeight: 48, maxHeight: 260)
                 .fixedSize(horizontal: false, vertical: true)
                 .onChange(of: textInput) { _, newValue in
@@ -300,4 +287,5 @@ struct CapturePanel: View {
         return true
     }
 }
+
 
