@@ -60,8 +60,18 @@ final class VaultWriter {
                 }
             }
         }
-        let markdown = session.toMarkdown(title: title)
-        try markdown.write(toFile: filePath, atomically: true, encoding: .utf8)
+        let entry = session.toMarkdown(title: title)
+        if fm.fileExists(atPath: filePath) {
+            // Append a separator and the new entry
+            let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: filePath))
+            handle.seekToEndOfFile()
+            handle.write(("\n---\n\n" + entry).data(using: .utf8)!)
+            handle.closeFile()
+        } else {
+            // New daily file: date heading + first entry
+            let header = session.dailyHeading() + "\n\n"
+            try (header + entry).write(toFile: filePath, atomically: true, encoding: .utf8)
+        }
         return SaveResult(filePath: filePath)
     }
 

@@ -26,20 +26,14 @@ struct CaptureSession: Codable {
         items.compactMap { $0.mediaFiles }.flatMap { $0 }
     }
 
+    /// Markdown for a single capture entry (## time heading + content).
     func toMarkdown(title: String?) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd 'at' h:mm a"
-        let dateString = formatter.string(from: createdAt)
+        let timeFmt = DateFormatter()
+        timeFmt.dateFormat = "h:mm a"
+        let timeString = timeFmt.string(from: createdAt)
 
-        let heading = title ?? "Capture — \(dateString)"
         var lines: [String] = []
-        lines.append("# \(heading)")
-        lines.append("")
-        if title != nil {
-            lines.append("Notes captured on \(dateString)")
-            lines.append("")
-        }
-        lines.append("---")
+        lines.append("## \(title ?? timeString)")
         lines.append("")
 
         for item in items {
@@ -50,9 +44,17 @@ struct CaptureSession: Codable {
         return lines.joined(separator: "\n")
     }
 
+    /// Top-level date heading for the daily file.
+    func dailyHeading() -> String {
+        let dateFmt = DateFormatter()
+        dateFmt.dateFormat = "yyyy-MM-dd"
+        return "# \(dateFmt.string(from: createdAt))"
+    }
+
+    /// One file per day: YYYY-MM-DD.md
     func fallbackFilename() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd-h:mma"
+        formatter.dateFormat = "yyyy-MM-dd"
         return "\(formatter.string(from: createdAt)).md"
     }
 }

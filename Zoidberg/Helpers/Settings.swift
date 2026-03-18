@@ -5,7 +5,7 @@ enum AppSettings {
     static var defaults: UserDefaults = .standard
 
     static var vaultPath: String {
-        get { defaults.string(forKey: "vaultPath") ?? NSHomeDirectory() + "/Documents/Obsidian Vault" }
+        get { defaults.string(forKey: "vaultPath") ?? "/Users/jakobfaber/Obsidian/" }
         set { defaults.set(newValue, forKey: "vaultPath") }
     }
 

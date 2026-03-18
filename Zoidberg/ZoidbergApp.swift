@@ -19,6 +19,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private let hotkeyManager = HotkeyManager()
     private let transcriptionService = MacOSDictationService()
     private let escapeMonitor = EscapeKeyMonitor()
+    private var editKeyMonitor: Any?
 
     private var isPanelVisible: Bool { panel?.isVisible ?? false }
 
@@ -38,14 +39,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         panel = KeyablePanel(
             contentRect: NSRect(x: 0, y: 0, width: 300, height: 80),
-            styleMask: [.nonactivatingPanel, .resizable],
+            styleMask: [.resizable],
             backing: .buffered,
             defer: true
         )
         panel.isOpaque = false
         panel.backgroundColor = NSColor(red: 0.06, green: 0.04, blue: 0.1, alpha: 1)
         panel.hasShadow = true
-        panel.level = .popUpMenu
+        panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.isFloatingPanel = true
@@ -120,6 +121,39 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
         }
         escapeMonitor.start()
+
+        // Local event monitor: intercept Cmd+key events at the NSApplication level
+        // and route directly to the NSTextView. This fires before the view hierarchy
+        // dispatch, so NSHostingView cannot swallow the events.
+        editKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self = self,
+                  self.isPanelVisible,
+                  event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command),
+                  let chars = event.charactersIgnoringModifiers else {
+                return event
+            }
+
+            // Find the NSTextView directly — don't rely on firstResponder
+            guard let contentView = self.panel.contentView,
+                  let textView = self.findTextView(in: contentView) else {
+                return event
+            }
+
+            switch chars {
+            case "a": textView.selectAll(nil); return nil
+            case "c": textView.copy(nil); return nil
+            case "v": textView.paste(nil); return nil
+            case "x": textView.cut(nil); return nil
+            case "z":
+                if event.modifierFlags.contains(.shift) {
+                    textView.undoManager?.redo()
+                } else {
+                    textView.undoManager?.undo()
+                }
+                return nil
+            default: return event
+            }
+        }
     }
 
     @objc private func togglePanel() {
@@ -148,11 +182,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             panel.setFrameTopLeftPoint(NSPoint(x: panelX, y: panelY))
         }
 
+        // Activate the app so macOS dictation (Fn key) targets this window
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+
         panel.alphaValue = 0
         panel.orderFrontRegardless()
-        panel.makeKey()
+        panel.makeKeyAndOrderFront(nil)
         appState.openCount += 1
         appState.resetIdle()
+
+        // Make the NSTextView the first responder for Fn dictation support
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self,
+                  let contentView = self.panel.contentView,
+                  let textView = self.findTextView(in: contentView) else { return }
+            self.panel.makeFirstResponder(textView)
+        }
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.2
@@ -173,6 +219,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }, completionHandler: { [weak self] in
             self?.panel.orderOut(nil)
             self?.panel.alphaValue = 1
+            // Revert to accessory so the dock icon disappears
+            NSApp.setActivationPolicy(.accessory)
         })
     }
 
@@ -247,15 +295,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    /// Recursively find the NSTextView inside the view hierarchy.
+    private func findTextView(in view: NSView) -> NSTextView? {
+        if let textView = view as? NSTextView {
+            return textView
+        }
+        for subview in view.subviews {
+            if let found = findTextView(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
     @objc private func quit() {
         NSApplication.shared.terminate(nil)
     }
 }
 
-/// NSPanel subclass that accepts key status without a title bar.
+/// NSPanel subclass that accepts key status.
 final class KeyablePanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+    override var acceptsFirstResponder: Bool { true }
 }
 
 extension AppDelegate: TranscriptionDelegate {

@@ -215,11 +215,7 @@ struct CapturePanel: View {
 
     private var textArea: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TextEditor(text: $textInput)
-                .font(.system(size: 13, design: .monospaced))
-                .foregroundColor(.white.opacity(0.9))
-                .scrollContentBackground(.hidden)
-                .scrollIndicators(.never)
+            CapturePanelTextView(text: $textInput)
                 .frame(minHeight: 48, maxHeight: 260)
                 .fixedSize(horizontal: false, vertical: true)
                 .onChange(of: textInput) { _, newValue in

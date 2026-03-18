@@ -23,6 +23,7 @@
 		A10014 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10014 /* Permissions.swift */; };
 		A10015 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10015 /* Settings.swift */; };
 		A10016 /* EscapeKeyMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10016 /* EscapeKeyMonitor.swift */; };
+		A10017 /* CapturePanelTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10018 /* CapturePanelTextView.swift */; };
 		A10020 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = D10001 /* HotKey */; };
 /* End PBXBuildFile section */
 
@@ -44,6 +45,7 @@
 		B10015 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		B10016 /* EscapeKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapeKeyMonitor.swift; sourceTree = "<group>"; };
 		B10017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10018 /* CapturePanelTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanelTextView.swift; sourceTree = "<group>"; };
 		B10099 /* Zoidberg.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zoidberg.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -89,6 +91,7 @@
 				B10005 /* SettingsView.swift */,
 				B10006 /* ToastView.swift */,
 				B10007 /* AudioWaveView.swift */,
+				B10018 /* CapturePanelTextView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -205,6 +208,7 @@
 				A10014 /* Permissions.swift in Sources */,
 				A10015 /* Settings.swift in Sources */,
 				A10016 /* EscapeKeyMonitor.swift in Sources */,
+				A10017 /* CapturePanelTextView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,11 +266,11 @@
 		G10020 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 57FNV8BFER;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Zoidberg/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -284,11 +288,11 @@
 		G10021 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 57FNV8BFER;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Zoidberg/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
