@@ -94,5 +94,9 @@ enum AppSettings {
                 }
             }
         }
+        // Remove the now-empty legacy directory if everything moved successfully.
+        if let remaining = try? fm.contentsOfDirectory(atPath: oldDir), remaining.isEmpty {
+            try? fm.removeItem(atPath: oldDir)
+        }
     }
 }

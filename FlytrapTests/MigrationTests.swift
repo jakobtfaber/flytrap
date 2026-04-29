@@ -4,19 +4,16 @@ import XCTest
 
 final class MigrationTests: XCTestCase {
     private let testSuite = "com.flytrap.tests.migration"
-    private let legacySuite = "com.flytrap.tests.migration.legacy"
 
     override func setUp() {
         super.setUp()
         UserDefaults().removePersistentDomain(forName: testSuite)
-        UserDefaults().removePersistentDomain(forName: legacySuite)
         AppSettings.defaults = UserDefaults(suiteName: testSuite)!
     }
 
     override func tearDown() {
         AppSettings.defaults = .standard
         UserDefaults().removePersistentDomain(forName: testSuite)
-        UserDefaults().removePersistentDomain(forName: legacySuite)
         super.tearDown()
     }
 
