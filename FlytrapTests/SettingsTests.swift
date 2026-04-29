@@ -1,11 +1,11 @@
-// ZoidbergTests/SettingsTests.swift
+// FlytrapTests/SettingsTests.swift
 import XCTest
-@testable import Zoidberg
+@testable import Flytrap
 
 final class SettingsTests: XCTestCase {
     override func setUp() {
-        AppSettings.defaults = UserDefaults(suiteName: "com.zoidberg.tests")!
-        AppSettings.defaults.removePersistentDomain(forName: "com.zoidberg.tests")
+        AppSettings.defaults = UserDefaults(suiteName: "com.flytrap.tests")!
+        AppSettings.defaults.removePersistentDomain(forName: "com.flytrap.tests")
     }
 
     func testDefaultVaultPath() {

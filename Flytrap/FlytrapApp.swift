@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ZoidbergApp: App {
+struct FlytrapApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "Zoidberg")
+            button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "Flytrap")
             button.action = #selector(togglePanel)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }
@@ -55,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         panel.minSize = NSSize(width: 280, height: 100)
         panel.maxSize = NSSize(width: 600, height: 800)
         panel.contentViewController = hostingController
-        panel.setFrameAutosaveName("ZoidbergPanel")
+        panel.setFrameAutosaveName("FlytrapPanel")
 
         // Round the entire window frame
         if let frameView = panel.contentView?.superview {
@@ -171,7 +171,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     private func showPanel() {
-        if !panel.setFrameUsingName("ZoidbergPanel") {
+        if !panel.setFrameUsingName("FlytrapPanel") {
             guard let button = statusItem.button,
                   let buttonWindow = button.window else { return }
             let buttonRect = button.convert(button.bounds, to: nil)
@@ -258,7 +258,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let menu = NSMenu()
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit Zoidberg", action: #selector(quit), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit Flytrap", action: #selector(quit), keyEquivalent: "q"))
         statusItem.menu = menu
         statusItem.button?.performClick(nil)
         statusItem.menu = nil
@@ -275,7 +275,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let window = NSWindow(
             contentViewController: NSHostingController(rootView: SettingsView())
         )
-        window.title = "Zoidberg Settings"
+        window.title = "Flytrap Settings"
         window.styleMask = [.titled, .closable]
         window.setContentSize(NSSize(width: 400, height: 300))
         window.center()

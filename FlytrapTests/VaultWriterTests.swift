@@ -1,12 +1,12 @@
-// ZoidbergTests/VaultWriterTests.swift
+// FlytrapTests/VaultWriterTests.swift
 import XCTest
-@testable import Zoidberg
+@testable import Flytrap
 
 final class VaultWriterTests: XCTestCase {
     var testVaultPath: String!
 
     override func setUp() {
-        testVaultPath = NSTemporaryDirectory() + "zoidberg-test-vault-\(UUID().uuidString)"
+        testVaultPath = NSTemporaryDirectory() + "flytrap-test-vault-\(UUID().uuidString)"
         try? FileManager.default.createDirectory(atPath: testVaultPath, withIntermediateDirectories: true)
     }
 

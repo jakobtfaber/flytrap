@@ -1,5 +1,5 @@
 import XCTest
-@testable import Zoidberg
+@testable import Flytrap
 
 final class CaptureItemTests: XCTestCase {
     func testTextItemMarkdown() {

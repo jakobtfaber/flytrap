@@ -1,4 +1,4 @@
-// Zoidberg/Helpers/Permissions.swift
+// Flytrap/Helpers/Permissions.swift
 import Cocoa
 import Speech
 

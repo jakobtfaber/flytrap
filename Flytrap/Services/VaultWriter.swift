@@ -1,4 +1,4 @@
-// Zoidberg/Services/VaultWriter.swift
+// Flytrap/Services/VaultWriter.swift
 import Foundation
 
 enum VaultWriterError: Error, LocalizedError {

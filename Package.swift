@@ -2,24 +2,24 @@
 import PackageDescription
 
 let package = Package(
-    name: "Zoidberg",
+    name: "Flytrap",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Zoidberg", targets: ["Zoidberg"])
+        .executable(name: "Flytrap", targets: ["Flytrap"])
     ],
     dependencies: [
         .package(url: "https://github.com/soffes/HotKey", from: "0.2.1")
     ],
     targets: [
         .executableTarget(
-            name: "Zoidberg",
+            name: "Flytrap",
             dependencies: ["HotKey"],
-            path: "Zoidberg"
+            path: "Flytrap"
         ),
         .testTarget(
-            name: "ZoidbergTests",
-            dependencies: ["Zoidberg"],
-            path: "ZoidbergTests"
+            name: "FlytrapTests",
+            dependencies: ["Flytrap"],
+            path: "FlytrapTests"
         )
     ]
 )

@@ -1,4 +1,4 @@
-// Zoidberg/Services/ClaudeService.swift
+// Flytrap/Services/ClaudeService.swift
 import Foundation
 
 final class ClaudeService {

@@ -1,4 +1,4 @@
-// Zoidberg/AppState.swift
+// Flytrap/AppState.swift
 import SwiftUI
 import Combine
 
@@ -33,7 +33,7 @@ final class AppState: ObservableObject {
     private var toastTimer: Timer?
 
     private let persistencePath: String = {
-        let dir = NSHomeDirectory() + "/Library/Application Support/Zoidberg"
+        let dir = NSHomeDirectory() + "/Library/Application Support/Flytrap"
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
         return dir + "/pending-session.json"
     }()

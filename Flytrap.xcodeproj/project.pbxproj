@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10001 /* ZoidbergApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10001 /* ZoidbergApp.swift */; };
+		A10001 /* FlytrapApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10001 /* FlytrapApp.swift */; };
 		A10002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10002 /* AppState.swift */; };
 		A10003 /* CapturePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10003 /* CapturePanel.swift */; };
 		A10004 /* CaptureItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10004 /* CaptureItemRow.swift */; };
@@ -28,7 +28,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		B10001 /* ZoidbergApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoidbergApp.swift; sourceTree = "<group>"; };
+		B10001 /* FlytrapApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlytrapApp.swift; sourceTree = "<group>"; };
 		B10002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		B10003 /* CapturePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanel.swift; sourceTree = "<group>"; };
 		B10004 /* CaptureItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureItemRow.swift; sourceTree = "<group>"; };
@@ -46,7 +46,7 @@
 		B10016 /* EscapeKeyMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapeKeyMonitor.swift; sourceTree = "<group>"; };
 		B10017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10018 /* CapturePanelTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanelTextView.swift; sourceTree = "<group>"; };
-		B10099 /* Zoidberg.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zoidberg.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10099 /* Flytrap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flytrap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,15 +64,15 @@
 		E10001 = {
 			isa = PBXGroup;
 			children = (
-				E10002 /* Zoidberg */,
+				E10002 /* Flytrap */,
 				E10099 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		E10002 /* Zoidberg */ = {
+		E10002 /* Flytrap */ = {
 			isa = PBXGroup;
 			children = (
-				B10001 /* ZoidbergApp.swift */,
+				B10001 /* FlytrapApp.swift */,
 				B10002 /* AppState.swift */,
 				B10017 /* Info.plist */,
 				E10003 /* Views */,
@@ -80,7 +80,7 @@
 				E10005 /* Models */,
 				E10006 /* Helpers */,
 			);
-			path = Zoidberg;
+			path = Flytrap;
 			sourceTree = "<group>";
 		};
 		E10003 /* Views */ = {
@@ -129,7 +129,7 @@
 		E10099 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				B10099 /* Zoidberg.app */,
+				B10099 /* Flytrap.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -137,9 +137,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F10001 /* Zoidberg */ = {
+		F10001 /* Flytrap */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = G10003 /* Build configuration list for PBXNativeTarget "Zoidberg" */;
+			buildConfigurationList = G10003 /* Build configuration list for PBXNativeTarget "Flytrap" */;
 			buildPhases = (
 				F10002 /* Sources */,
 				C10001 /* Frameworks */,
@@ -148,12 +148,12 @@
 			);
 			dependencies = (
 			);
-			name = Zoidberg;
+			name = Flytrap;
 			packageProductDependencies = (
 				D10001 /* HotKey */,
 			);
-			productName = Zoidberg;
-			productReference = B10099 /* Zoidberg.app */;
+			productName = Flytrap;
+			productReference = B10099 /* Flytrap.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -166,7 +166,7 @@
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
 			};
-			buildConfigurationList = G10001 /* Build configuration list for PBXProject "Zoidberg" */;
+			buildConfigurationList = G10001 /* Build configuration list for PBXProject "Flytrap" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -182,7 +182,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F10001 /* Zoidberg */,
+				F10001 /* Flytrap */,
 			);
 		};
 /* End PBXProject section */
@@ -192,7 +192,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10001 /* ZoidbergApp.swift in Sources */,
+				A10001 /* FlytrapApp.swift in Sources */,
 				A10002 /* AppState.swift in Sources */,
 				A10003 /* CapturePanel.swift in Sources */,
 				A10004 /* CaptureItemRow.swift in Sources */,
@@ -272,13 +272,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Zoidberg/Info.plist;
+				INFOPLIST_FILE = Flytrap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.malecks.zoidberg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jakobfaber.flytrap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -294,13 +294,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = Zoidberg/Info.plist;
+				INFOPLIST_FILE = Flytrap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.malecks.zoidberg;
+				PRODUCT_BUNDLE_IDENTIFIER = com.jakobfaber.flytrap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -310,7 +310,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		G10001 /* Build configuration list for PBXProject "Zoidberg" */ = {
+		G10001 /* Build configuration list for PBXProject "Flytrap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				G10010 /* Debug */,
@@ -319,7 +319,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		G10003 /* Build configuration list for PBXNativeTarget "Zoidberg" */ = {
+		G10003 /* Build configuration list for PBXNativeTarget "Flytrap" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				G10020 /* Debug */,

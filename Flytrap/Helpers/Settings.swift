@@ -1,4 +1,4 @@
-// Zoidberg/Helpers/Settings.swift
+// Flytrap/Helpers/Settings.swift
 import Foundation
 
 enum AppSettings {

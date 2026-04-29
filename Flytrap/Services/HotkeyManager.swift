@@ -1,4 +1,4 @@
-// Zoidberg/Services/HotkeyManager.swift
+// Flytrap/Services/HotkeyManager.swift
 import HotKey
 import Carbon
 
