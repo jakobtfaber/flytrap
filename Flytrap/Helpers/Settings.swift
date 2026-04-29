@@ -46,4 +46,53 @@ enum AppSettings {
         }
         set { defaults.set(newValue, forKey: "autoCloseSeconds") }
     }
+
+    // MARK: - Legacy migration (Zoidberg → Flytrap)
+
+    private static let migrationFlagKey = "flytrap.migration.v1.complete"
+    private static let legacyBundleId = "com.malecks.zoidberg"
+    private static let legacyKeys = [
+        "vaultPath",
+        "claudeApiKey",
+        "launchAtLogin",
+        "togglePanelHotkey",
+        "dictateHotkey",
+        "autoCloseEnabled",
+        "autoCloseSeconds",
+    ]
+
+    static func migrateLegacyDefaultsIfNeeded() {
+        guard !defaults.bool(forKey: migrationFlagKey) else { return }
+        if let legacy = UserDefaults(suiteName: legacyBundleId) {
+            for key in legacyKeys {
+                if let value = legacy.object(forKey: key) {
+                    defaults.set(value, forKey: key)
+                }
+            }
+        }
+        migrateApplicationSupportDirectory()
+        defaults.set(true, forKey: migrationFlagKey)
+    }
+
+    private static func migrateApplicationSupportDirectory() {
+        let fm = FileManager.default
+        let home = NSHomeDirectory()
+        let oldDir = home + "/Library/Application Support/Zoidberg"
+        let newDir = home + "/Library/Application Support/Flytrap"
+
+        var oldIsDir: ObjCBool = false
+        guard fm.fileExists(atPath: oldDir, isDirectory: &oldIsDir), oldIsDir.boolValue else {
+            return
+        }
+        try? fm.createDirectory(atPath: newDir, withIntermediateDirectories: true)
+        if let entries = try? fm.contentsOfDirectory(atPath: oldDir) {
+            for entry in entries {
+                let src = (oldDir as NSString).appendingPathComponent(entry)
+                let dst = (newDir as NSString).appendingPathComponent(entry)
+                if !fm.fileExists(atPath: dst) {
+                    try? fm.moveItem(atPath: src, toPath: dst)
+                }
+            }
+        }
+    }
 }

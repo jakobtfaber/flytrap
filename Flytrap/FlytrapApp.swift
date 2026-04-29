@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var isPanelVisible: Bool { panel?.isVisible ?? false }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppSettings.migrateLegacyDefaultsIfNeeded()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "Flytrap")
