@@ -9,7 +9,7 @@ final class CaptureItemTests: XCTestCase {
 
     func testImageItemMarkdown() {
         let item = CaptureItem.image(filename: "screenshot.png", originalPath: "/tmp/screenshot.png")
-        XCTAssertEqual(item.toMarkdown(), "![screenshot.png](attachments/screenshot.png)")
+        XCTAssertEqual(item.toMarkdown(), "![[attachments/screenshot.png|500]]\n*screenshot.png*")
     }
 
     func testVideoItemMarkdown() {

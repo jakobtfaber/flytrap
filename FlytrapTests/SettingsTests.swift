@@ -9,8 +9,8 @@ final class SettingsTests: XCTestCase {
     }
 
     func testDefaultVaultPath() {
-        let path = AppSettings.vaultPath
-        XCTAssertTrue(path.hasSuffix("Documents/Obsidian Vault"))
+        XCTAssertEqual(AppSettings.vaultPath, "/Users/jakobfaber/Obsidian/",
+                       "The default vault path is hardcoded in AppSettings; this test pins it.")
     }
 
     func testSetVaultPath() {

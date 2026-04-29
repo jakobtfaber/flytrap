@@ -23,9 +23,10 @@ final class CaptureSessionTests: XCTestCase {
 
         let md = session.toMarkdown(title: nil)
 
-        XCTAssertTrue(md.contains("Notes captured on"))
+        XCTAssertTrue(md.range(of: #"^## \d{1,2}:\d{2} [AP]M"#, options: .regularExpression) != nil,
+                      "Fallback title should be a 'H:mm a' time heading at the start of the entry")
         XCTAssertTrue(md.contains("Some notes about auth"))
-        XCTAssertTrue(md.contains("![screenshot.png](attachments/screenshot.png)"))
+        XCTAssertTrue(md.contains("![[attachments/screenshot.png|500]]"))
     }
 
     func testToMarkdownWithCustomTitle() {
@@ -34,7 +35,8 @@ final class CaptureSessionTests: XCTestCase {
 
         let md = session.toMarkdown(title: "Auth Flow Investigation")
 
-        XCTAssertTrue(md.hasPrefix("# Auth Flow Investigation"))
+        XCTAssertTrue(md.hasPrefix("## Auth Flow Investigation"),
+                      "Per-entry heading is H2 (## …), not H1; H1 is reserved for the daily-note date heading written by VaultWriter")
         XCTAssertTrue(md.contains("Auth flow notes"))
     }
 

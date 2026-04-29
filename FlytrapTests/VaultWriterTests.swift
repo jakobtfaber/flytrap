@@ -21,7 +21,9 @@ final class VaultWriterTests: XCTestCase {
         let result = try writer.save(session: session, title: nil, folder: nil)
         XCTAssertTrue(FileManager.default.fileExists(atPath: result.filePath))
         XCTAssertTrue(result.filePath.contains("/Captures/"))
-        XCTAssertTrue(result.filePath.hasSuffix("-capture.md"))
+        let basename = (result.filePath as NSString).lastPathComponent
+        XCTAssertTrue(basename.range(of: #"^\d{4}-\d{2}-\d{2}\.md$"#, options: .regularExpression) != nil,
+                      "Daily-note filename must be YYYY-MM-DD.md — the format the downstream Captures parser expects")
         let content = try String(contentsOfFile: result.filePath, encoding: .utf8)
         XCTAssertTrue(content.contains("Hello from test"))
     }
