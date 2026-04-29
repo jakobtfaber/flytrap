@@ -1,7 +1,8 @@
 .build/
+build/
 .swiftpm/
 xcuserdata/
 DerivedData/
 .DS_Store
 .superpowers/
-Zoidberg.xcodeproj/project.xcworkspace/
+*.xcodeproj/project.xcworkspace/
