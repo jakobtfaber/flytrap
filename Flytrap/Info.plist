@@ -10,6 +10,8 @@
     <string>com.jakobfaber.flytrap</string>
     <key>CFBundleExecutable</key>
     <string>Flytrap</string>
+    <key>CFBundleIconFile</key>
+    <string>Flytrap</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
