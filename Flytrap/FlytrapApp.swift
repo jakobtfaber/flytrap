@@ -27,7 +27,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         AppSettings.migrateLegacyDefaultsIfNeeded()
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "cpu", accessibilityDescription: "Flytrap")
+            let icon = NSImage(named: "MenubarIcon")
+                ?? NSImage(systemSymbolName: "cpu", accessibilityDescription: "Flytrap")
+            icon?.isTemplate = true
+            icon?.accessibilityDescription = "Flytrap"
+            button.image = icon
             button.action = #selector(togglePanel)
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
         }

@@ -26,6 +26,8 @@
 		A10017 /* CapturePanelTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10018 /* CapturePanelTextView.swift */; };
 		A10020 /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = D10001 /* HotKey */; };
 		A10100 /* Flytrap.icns in Resources */ = {isa = PBXBuildFile; fileRef = B10100 /* Flytrap.icns */; };
+		A10101 /* MenubarIcon.png in Resources */ = {isa = PBXBuildFile; fileRef = B10101 /* MenubarIcon.png */; };
+		A10102 /* MenubarIcon@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B10102 /* MenubarIcon@2x.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +51,8 @@
 		B10018 /* CapturePanelTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePanelTextView.swift; sourceTree = "<group>"; };
 		B10099 /* Flytrap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flytrap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B10100 /* Flytrap.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Flytrap.icns; sourceTree = "<group>"; };
+		B10101 /* MenubarIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MenubarIcon.png; sourceTree = "<group>"; };
+		B10102 /* MenubarIcon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MenubarIcon@2x.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +72,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10100 /* Flytrap.icns in Resources */,
+				A10101 /* MenubarIcon.png in Resources */,
+				A10102 /* MenubarIcon@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,6 +95,8 @@
 				B10002 /* AppState.swift */,
 				B10017 /* Info.plist */,
 				B10100 /* Flytrap.icns */,
+				B10101 /* MenubarIcon.png */,
+				B10102 /* MenubarIcon@2x.png */,
 				E10003 /* Views */,
 				E10004 /* Services */,
 				E10005 /* Models */,
