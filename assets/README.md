@@ -4,12 +4,12 @@ Source artwork for app and menu-bar icons. Bundled resources at `Flytrap/Flytrap
 
 | Master | Derived (bundled) | Used for |
 |---|---|---|
-| `assets/Flytrap.png` (1024×1024) | `Flytrap/Flytrap.icns` | App icon (Finder, Privacy panels) |
+| `assets/Flytrap.png` (2048×2048, square, with alpha) | `Flytrap/Flytrap.icns` | App icon (Finder, Privacy panels) |
 | `assets/Flytrap-Menubar.png` (black silhouette + alpha) | `Flytrap/MenubarIcon.png` (22pt) and `MenubarIcon@2x.png` (44pt) | Menu-bar status icon (template — auto-tinted by macOS) |
 
 ## Regenerating `Flytrap/Flytrap.icns`
 
-If you update `assets/Flytrap.png` (must remain 1024×1024 PNG), regenerate the icns from the repo root:
+If you update `assets/Flytrap.png`, regenerate the icns from the repo root. Source should be a square PNG with alpha, at least 1024×1024 (currently 2048×2048). The `.icns` format caps out at 1024×1024 (`@2x` of 512×512), so any larger master gets downsampled.
 
 ```bash
 ICONSET=/tmp/Flytrap.iconset
@@ -24,7 +24,7 @@ sips -z 256  256  assets/Flytrap.png --out "$ICONSET/icon_128x128@2x.png" >/dev/
 sips -z 256  256  assets/Flytrap.png --out "$ICONSET/icon_256x256.png"    >/dev/null
 sips -z 512  512  assets/Flytrap.png --out "$ICONSET/icon_256x256@2x.png" >/dev/null
 sips -z 512  512  assets/Flytrap.png --out "$ICONSET/icon_512x512.png"    >/dev/null
-cp assets/Flytrap.png "$ICONSET/icon_512x512@2x.png"
+sips -z 1024 1024 assets/Flytrap.png --out "$ICONSET/icon_512x512@2x.png" >/dev/null
 
 iconutil -c icns "$ICONSET" -o Flytrap/Flytrap.icns
 rm -rf "$ICONSET"
