@@ -51,14 +51,17 @@ final class AppState: ObservableObject {
         idleTimer?.invalidate()
         autoCloseTimer?.invalidate()
 
-        // Save hint only after typing, and only if there's content
+        // Save hint only after typing, and only if there's content.
+        // Timer.scheduledTimer callbacks run on the runloop they're scheduled
+        // on (here: main), so MainActor.assumeIsolated is correct and avoids
+        // the @Sendable Task-capture issues that Swift 6 strict mode flags.
         if showHint && hasContent {
             idleTimer = Timer.scheduledTimer(withTimeInterval: idleDelay, repeats: false) { [weak self] _ in
-                Task { @MainActor in
+                MainActor.assumeIsolated {
                     guard let self = self else { return }
                     self.isIdle = true
                     self.idleTimer = Timer.scheduledTimer(withTimeInterval: self.hintDuration, repeats: false) { [weak self] _ in
-                        Task { @MainActor in
+                        MainActor.assumeIsolated {
                             self?.isIdle = false
                         }
                     }
@@ -66,10 +69,10 @@ final class AppState: ObservableObject {
             }
         }
 
-        // Auto-close after configured seconds of inactivity
+        // Auto-close after configured seconds of inactivity.
         if AppSettings.autoCloseEnabled {
             autoCloseTimer = Timer.scheduledTimer(withTimeInterval: autoCloseDelay, repeats: false) { [weak self] _ in
-                Task { @MainActor in
+                MainActor.assumeIsolated {
                     self?.onDismiss?()
                 }
             }
@@ -196,7 +199,7 @@ final class AppState: ObservableObject {
         toastIsError = isError
         toastTimer?.invalidate()
         toastTimer = Timer.scheduledTimer(withTimeInterval: isError ? 3 : 1.5, repeats: false) { [weak self] _ in
-            Task { @MainActor in
+            MainActor.assumeIsolated {
                 self?.toastMessage = nil
             }
         }
