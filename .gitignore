@@ -1,8 +1,27 @@
+# Build artifacts
 .build/
 build/
 .swiftpm/
 xcuserdata/
 DerivedData/
-.DS_Store
-.superpowers/
 *.xcodeproj/project.xcworkspace/
+
+# macOS noise
+.DS_Store
+
+# Internal tooling
+.superpowers/
+
+# Secrets (defensive — none currently in repo, kept out of accidental git add -A)
+.env
+.env.*
+*.secret
+secrets/
+*.local.json
+
+# Apple cert / signing material
+*.pem
+*.key
+*.p8
+*.p12
+*.mobileprovision

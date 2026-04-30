@@ -9,8 +9,9 @@ final class SettingsTests: XCTestCase {
     }
 
     func testDefaultVaultPath() {
-        XCTAssertEqual(AppSettings.vaultPath, "/Users/jakobfaber/Obsidian/",
-                       "The default vault path is hardcoded in AppSettings; this test pins it.")
+        let expected = "\(NSHomeDirectory())/Obsidian/"
+        XCTAssertEqual(AppSettings.vaultPath, expected,
+                       "Default vault path is ~/Obsidian/ for the current user.")
     }
 
     func testSetVaultPath() {

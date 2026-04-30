@@ -18,7 +18,7 @@ These were open questions in the brief. Locked-in answers:
 
 2. **Bundle id:** `com.jakobfaber.flytrap`. Matches the user's existing identifier convention and clearly transfers ownership away from `malecks`.
 
-3. **UserDefaults migration:** One-shot copy on first launch. Implemented as a `migrateLegacyDefaultsIfNeeded()` call in `FlytrapApp` startup. Reads the `com.malecks.zoidberg` domain via `UserDefaults(suiteName:)`, writes to standard defaults, sets a `flytrap.migration.v1.complete` flag to prevent re-running. Worth doing because the user has at minimum `vaultPath = /Users/jakobfaber/Obsidian` and `launchAtLogin = 1` set; possibly `claudeApiKey` too.
+3. **UserDefaults migration:** One-shot copy on first launch. Implemented as a `migrateLegacyDefaultsIfNeeded()` call in `FlytrapApp` startup. Reads the `com.malecks.zoidberg` domain via `UserDefaults(suiteName:)`, writes to standard defaults, sets a `flytrap.migration.v1.complete` flag to prevent re-running. Worth doing because the user has at minimum `vaultPath = ~/Obsidian` and `launchAtLogin = 1` set; possibly `claudeApiKey` too.
 
 4. **Application Support directory:** Migrate the directory contents on first launch (same migration function). The directory is currently empty, but the migration code is cheap and protects against future runs that have a real `pending-session.json`. New path: `~/Library/Application Support/Flytrap/`.
 
@@ -142,16 +142,16 @@ defaults export com.malecks.zoidberg ~/zoidberg-defaults.snapshot.plist
 plutil -p ~/zoidberg-defaults.snapshot.plist
 ```
 
-Expected: a plist printout showing at least `vaultPath = /Users/jakobfaber/Obsidian` and `launchAtLogin = 1`. This snapshot is the input for Phase 4's migration code and lets you manually `defaults import` if anything goes wrong.
+Expected: a plist printout showing at least `vaultPath = ~/Obsidian` and `launchAtLogin = 1`. This snapshot is the input for Phase 4's migration code and lets you manually `defaults import` if anything goes wrong.
 
 ### Task 0.3: Verify the source tree is clean
 
-**Files:** `/Users/jakobfaber/Developer/forks/zoidberg/` (read-only check)
+**Files:** `~/Developer/forks/zoidberg/` (read-only check)
 
 - [ ] **Step 1: Confirm no uncommitted changes in the fork before copying**
 
 ```bash
-git -C /Users/jakobfaber/Developer/forks/zoidberg status --porcelain
+git -C ~/Developer/forks/zoidberg status --porcelain
 ```
 
 Expected: empty output. If there are uncommitted changes, commit or stash them first — do not lose work in the rename.
@@ -159,7 +159,7 @@ Expected: empty output. If there are uncommitted changes, commit or stash them f
 - [ ] **Step 2: Confirm the `Captures` repo is also in a known state**
 
 ```bash
-git -C /Users/jakobfaber/Obsidian/Captures status --short | head
+git -C ~/Obsidian/Captures status --short | head
 ```
 
 Expected: only the existing untracked daily-note files (e.g. `?? 2026-04-29.md`). Documenting baseline so post-rename diffs are interpretable.
@@ -170,20 +170,20 @@ Expected: only the existing untracked daily-note files (e.g. `?? 2026-04-29.md`)
 
 ### Task 1.1: Create the parent directory
 
-**Files:** `/Users/jakobfaber/Developer/apps/` (created)
+**Files:** `~/Developer/apps/` (created)
 
 - [ ] **Step 1: Create the `apps/` directory if it doesn't exist**
 
 ```bash
-mkdir -p /Users/jakobfaber/Developer/apps
-ls -ld /Users/jakobfaber/Developer/apps
+mkdir -p ~/Developer/apps
+ls -ld ~/Developer/apps
 ```
 
 Expected: directory exists, owned by `jakobfaber`.
 
 ### Task 1.2: Copy the source tree (preserving git history)
 
-**Files:** `/Users/jakobfaber/Developer/apps/flytrap/` (created from `~/Developer/forks/zoidberg/`)
+**Files:** `~/Developer/apps/flytrap/` (created from `~/Developer/forks/zoidberg/`)
 
 - [ ] **Step 1: Use rsync to copy everything including `.git`, excluding build artifacts and DerivedData symlinks**
 
@@ -192,8 +192,8 @@ rsync -a \
   --exclude '.build/' \
   --exclude 'build/' \
   --exclude '.DS_Store' \
-  /Users/jakobfaber/Developer/forks/zoidberg/ \
-  /Users/jakobfaber/Developer/apps/flytrap/
+  ~/Developer/forks/zoidberg/ \
+  ~/Developer/apps/flytrap/
 ```
 
 Expected: silent success.
@@ -201,34 +201,34 @@ Expected: silent success.
 - [ ] **Step 2: Sanity-check the copy**
 
 ```bash
-ls /Users/jakobfaber/Developer/apps/flytrap/
-git -C /Users/jakobfaber/Developer/apps/flytrap log --oneline -3
+ls ~/Developer/apps/flytrap/
+git -C ~/Developer/apps/flytrap log --oneline -3
 ```
 
 Expected: same top-level layout as the fork (Zoidberg/, ZoidbergTests/, Zoidberg.xcodeproj/, Package.swift, docs/, README absent or present matching source) and the same three most-recent commits as the fork (`7d68fba`, `973af60`, `ef599f8`).
 
 ### Task 1.3: Detach from the public fork remote
 
-**Files:** `/Users/jakobfaber/Developer/apps/flytrap/.git/config` (modified via git CLI)
+**Files:** `~/Developer/apps/flytrap/.git/config` (modified via git CLI)
 
 - [ ] **Step 1: Remove the GitHub fork remote**
 
 ```bash
-git -C /Users/jakobfaber/Developer/apps/flytrap remote remove origin
-git -C /Users/jakobfaber/Developer/apps/flytrap remote -v
+git -C ~/Developer/apps/flytrap remote remove origin
+git -C ~/Developer/apps/flytrap remote -v
 ```
 
 Expected: empty output from `remote -v`. The repo is now standalone locally; new origin gets added in Phase 8 after verification.
 
 ### Task 1.4: Make a checkpoint commit before mutating anything
 
-**Files:** `/Users/jakobfaber/Developer/apps/flytrap/.flytrap-rename-checkpoint` (created, then committed)
+**Files:** `~/Developer/apps/flytrap/.flytrap-rename-checkpoint` (created, then committed)
 
 - [ ] **Step 1: Create a tag at the pre-rename HEAD so rollback is one command**
 
 ```bash
-git -C /Users/jakobfaber/Developer/apps/flytrap tag pre-flytrap-rename
-git -C /Users/jakobfaber/Developer/apps/flytrap tag --list pre-flytrap-rename
+git -C ~/Developer/apps/flytrap tag pre-flytrap-rename
+git -C ~/Developer/apps/flytrap tag --list pre-flytrap-rename
 ```
 
 Expected: `pre-flytrap-rename` printed. To roll back any later phase: `git reset --hard pre-flytrap-rename`.
@@ -237,10 +237,10 @@ Expected: `pre-flytrap-rename` printed. To roll back any later phase: `git reset
 
 ## Phase 2: File and Directory Renames
 
-All commands run from `/Users/jakobfaber/Developer/apps/flytrap/`. Set this once:
+All commands run from `~/Developer/apps/flytrap/`. Set this once:
 
 ```bash
-cd /Users/jakobfaber/Developer/apps/flytrap
+cd ~/Developer/apps/flytrap
 ```
 
 ### Task 2.1: Rename the source directory
@@ -778,7 +778,7 @@ git commit -m "feat: one-shot migration of legacy Zoidberg defaults and App Supp
 - [ ] **Step 1: Build with xcodebuild from the renamed Xcode project**
 
 ```bash
-cd /Users/jakobfaber/Developer/apps/flytrap
+cd ~/Developer/apps/flytrap
 xcodebuild \
   -project Flytrap.xcodeproj \
   -scheme Flytrap \
@@ -837,7 +837,7 @@ Expected: `Zoidberg.app: No such file or directory` and `/Applications/Zoidberg.
 
 ```bash
 cp -R \
-  /Users/jakobfaber/Developer/apps/flytrap/build/Build/Products/Release/Flytrap.app \
+  ~/Developer/apps/flytrap/build/Build/Products/Release/Flytrap.app \
   /Applications/Flytrap.app
 ls -d /Applications/Flytrap.app
 ```
@@ -848,7 +848,7 @@ Expected: directory exists.
 
 ```bash
 md5 -q /Applications/Flytrap.app/Contents/MacOS/Flytrap
-md5 -q /Users/jakobfaber/Developer/apps/flytrap/build/Build/Products/Release/Flytrap.app/Contents/MacOS/Flytrap
+md5 -q ~/Developer/apps/flytrap/build/Build/Products/Release/Flytrap.app/Contents/MacOS/Flytrap
 ```
 
 Expected: identical hashes. Mismatch = the install didn't replace what you think it did (per the existing Hindsight memory `feedback_zoidberg_install`).
@@ -877,7 +877,7 @@ Expected: a PID line. The menu bar should now show the Flytrap icon (cpu SF Symb
 defaults read com.jakobfaber.flytrap
 ```
 
-Expected: `vaultPath = "/Users/jakobfaber/Obsidian"`, `launchAtLogin = 1`, `flytrap.migration.v1.complete = 1`. If the migration flag is set but values are missing, the legacy domain might already have been emptied — confirm `defaults read com.malecks.zoidberg` still has them.
+Expected: `vaultPath = "~/Obsidian"`, `launchAtLogin = 1`, `flytrap.migration.v1.complete = 1`. If the migration flag is set but values are missing, the legacy domain might already have been emptied — confirm `defaults read com.malecks.zoidberg` still has them.
 
 - [ ] **Step 2: Confirm App Support directory was migrated (if non-empty originally)**
 
@@ -919,7 +919,7 @@ Use a sentinel like `flytrap-rename-verification-2026-04-29` so it's grep-able.
 
 ```bash
 TODAY=$(date +%Y-%m-%d)
-grep -n 'flytrap-rename-verification' "/Users/jakobfaber/Obsidian/Captures/$TODAY.md"
+grep -n 'flytrap-rename-verification' "~/Obsidian/Captures/$TODAY.md"
 ```
 
 Expected: a hit. The path `<vault>/Captures/` is unchanged by the rename — this proves the data-layout contract held.
@@ -927,7 +927,7 @@ Expected: a hit. The path `<vault>/Captures/` is unchanged by the rename — thi
 - [ ] **Step 3: Verify the format matches the parser's expectations**
 
 ```bash
-tail -10 "/Users/jakobfaber/Obsidian/Captures/$TODAY.md"
+tail -10 "~/Obsidian/Captures/$TODAY.md"
 ```
 
 Expected: a `## H:mm AM/PM` heading with the sentinel below, preceded by `\n---\n` if it wasn't the first entry of the day.
@@ -939,7 +939,7 @@ Expected: a `## H:mm AM/PM` heading with the sentinel below, preceded by `\n---\
 - [ ] **Step 1: Run the dry-run pipeline**
 
 ```bash
-cd /Users/jakobfaber/Obsidian/Captures
+cd ~/Obsidian/Captures
 python3 Library/_automation/library_workflow.py --mode dry-run --classifier heuristic
 ```
 
@@ -949,7 +949,7 @@ Expected: exit code 0; no Python tracebacks.
 
 ```bash
 grep flytrap-rename-verification \
-  /Users/jakobfaber/Obsidian/Captures/Library/_automation/outbox/classification_preview.md
+  ~/Obsidian/Captures/Library/_automation/outbox/classification_preview.md
 ```
 
 Expected: a hit. This is the load-bearing acceptance test — the Flytrap-produced entry was successfully consumed by the unchanged Python parser. Format contract verified intact.
@@ -974,7 +974,7 @@ Expected: `not running`; the `.bak` exists. macOS shouldn't try to launch a `.ap
 ### Task 7.1: Update `~/Obsidian/Captures/CLAUDE.md`
 
 **Files:**
-- Modify: `/Users/jakobfaber/Obsidian/Captures/CLAUDE.md`
+- Modify: `~/Obsidian/Captures/CLAUDE.md`
 
 The CLAUDE.md from the prior conversation turn references Zoidberg by name in three places: the project identity paragraph (line ~3), the project map entry (line ~13), and the dedicated Zoidberg `<important if>` block (lines ~40–55). All three need to be updated to reference Flytrap, with a brief mention that Flytrap was previously called Zoidberg so future agents recognize legacy paths.
 
@@ -1020,7 +1020,7 @@ Add one new sentence at the very top of the block: `Flytrap was previously calle
 - [ ] **Step 4: Confirm no Zoidberg references remain in `CLAUDE.md` outside the "previously called" mention**
 
 ```bash
-grep -nE "[Zz]oidberg" /Users/jakobfaber/Obsidian/Captures/CLAUDE.md
+grep -nE "[Zz]oidberg" ~/Obsidian/Captures/CLAUDE.md
 ```
 
 Expected: at most two hits — the "(formerly 'Zoidberg')" parenthetical and the "previously called Zoidberg" sentence. Anything else is a stale reference.
@@ -1028,8 +1028,8 @@ Expected: at most two hits — the "(formerly 'Zoidberg')" parenthetical and the
 - [ ] **Step 5: Commit the CLAUDE.md update in the Captures repo**
 
 ```bash
-git -C /Users/jakobfaber/Obsidian/Captures add CLAUDE.md
-git -C /Users/jakobfaber/Obsidian/Captures commit -m "docs: rename Zoidberg references to Flytrap after app rename"
+git -C ~/Obsidian/Captures add CLAUDE.md
+git -C ~/Obsidian/Captures commit -m "docs: rename Zoidberg references to Flytrap after app rename"
 ```
 
 ### Task 7.2: Retain a follow-up entry to Hindsight
@@ -1070,7 +1070,7 @@ Expected: `Logged in to github.com as jakobtfaber` (or similar).
 - [ ] **Step 2: Create a private repo and add it as origin**
 
 ```bash
-cd /Users/jakobfaber/Developer/apps/flytrap
+cd ~/Developer/apps/flytrap
 gh repo create jakobtfaber/flytrap \
   --private \
   --source . \
@@ -1105,7 +1105,7 @@ Only run this AFTER Phase 6 verifications pass and Flytrap has been used for at 
 
 ```bash
 defaults read com.jakobfaber.flytrap | head
-ls "/Users/jakobfaber/Obsidian/Captures/$(date +%Y-%m-%d).md" >/dev/null && echo "today's note exists"
+ls "~/Obsidian/Captures/$(date +%Y-%m-%d).md" >/dev/null && echo "today's note exists"
 ```
 
 Expected: prefs present, today's daily note exists.
@@ -1137,23 +1137,23 @@ killall cfprefsd 2>/dev/null || true
 ### Task 8.3: Archive the original public fork
 
 **Files:**
-- Move: `/Users/jakobfaber/Developer/forks/zoidberg/` → `/Users/jakobfaber/projects/archive/zoidberg/`
+- Move: `~/Developer/forks/zoidberg/` → `~/projects/archive/zoidberg/`
 
 The user's home-directory CLAUDE.md (`~/CLAUDE.md`) specifies that stale projects (untouched >1 year) live under `~/projects/archive/`. The fork is now superseded; archive it but don't delete — it's the rollback safety net.
 
 - [ ] **Step 1: Move the fork to archive**
 
 ```bash
-mkdir -p /Users/jakobfaber/projects/archive
-mv /Users/jakobfaber/Developer/forks/zoidberg /Users/jakobfaber/projects/archive/zoidberg
-ls -d /Users/jakobfaber/projects/archive/zoidberg
+mkdir -p ~/projects/archive
+mv ~/Developer/forks/zoidberg ~/projects/archive/zoidberg
+ls -d ~/projects/archive/zoidberg
 ```
 
 Expected: directory listed at the new path.
 
 - [ ] **Step 2: Drop a README breadcrumb in the archived directory**
 
-Create `/Users/jakobfaber/projects/archive/zoidberg/RENAMED.md` with:
+Create `~/projects/archive/zoidberg/RENAMED.md` with:
 
 ```markdown
 # This is the legacy Zoidberg source
@@ -1171,7 +1171,7 @@ This directory is preserved as a rollback safety net only. Do not edit or build 
 - [ ] **Step 3: Final commit if any tracked changes remain**
 
 ```bash
-git -C /Users/jakobfaber/Developer/apps/flytrap status --short
+git -C ~/Developer/apps/flytrap status --short
 ```
 
 Expected: empty. If anything's pending from earlier phases, commit it now.
@@ -1209,8 +1209,8 @@ Expected: empty. If anything's pending from earlier phases, commit it now.
 If anything goes wrong in Phases 5–8:
 
 1. **Re-install Zoidberg.app**: `mv /Applications/Zoidberg.app.bak /Applications/Zoidberg.app && open /Applications/Zoidberg.app`. The original prefs at `com.malecks.zoidberg` are untouched until Phase 8.2 Step 4.
-2. **Reset the new repo to pre-rename**: `git -C /Users/jakobfaber/Developer/apps/flytrap reset --hard pre-flytrap-rename` (the tag from Task 1.4).
-3. **Discard the new repo entirely**: `rm -rf /Users/jakobfaber/Developer/apps/flytrap`. The original fork at `~/Developer/forks/zoidberg/` is still intact through Phase 8.3.
+2. **Reset the new repo to pre-rename**: `git -C ~/Developer/apps/flytrap reset --hard pre-flytrap-rename` (the tag from Task 1.4).
+3. **Discard the new repo entirely**: `rm -rf ~/Developer/apps/flytrap`. The original fork at `~/Developer/forks/zoidberg/` is still intact through Phase 8.3.
 4. **Restore prefs**: `defaults import com.malecks.zoidberg ~/zoidberg-defaults.snapshot.plist`.
 
 ---

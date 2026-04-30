@@ -5,7 +5,10 @@ enum AppSettings {
     static var defaults: UserDefaults = .standard
 
     static var vaultPath: String {
-        get { defaults.string(forKey: "vaultPath") ?? "/Users/jakobfaber/Obsidian/" }
+        // Default to ~/Obsidian/ for the current user. Resolved at access
+        // time via NSHomeDirectory() so the binary works for any user, not
+        // just the developer's home dir.
+        get { defaults.string(forKey: "vaultPath") ?? "\(NSHomeDirectory())/Obsidian/" }
         set { defaults.set(newValue, forKey: "vaultPath") }
     }
 

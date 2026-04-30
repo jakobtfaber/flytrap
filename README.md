@@ -60,7 +60,7 @@ cp -R build/Build/Products/Release/Flytrap.app /Applications/
 open /Applications/Flytrap.app
 ```
 
-On first launch the app sits in your menu bar (no Dock icon — `LSUIElement` is `true`). Right-click the icon to open Settings and set your vault path. The default is `/Users/jakobfaber/Obsidian/`.
+On first launch the app sits in your menu bar (no Dock icon — `LSUIElement` is `true`). Right-click the icon to open Settings and set your vault path. The default is `~/Obsidian/`.
 
 To run the test suite:
 
