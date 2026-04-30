@@ -92,10 +92,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         mainMenu.addItem(editMenuItem)
         NSApp.mainMenu = mainMenu
 
-        if Permissions.checkAccessibility() == .denied {
-            Permissions.requestAccessibility()
-        }
-
         hotkeyManager.onTogglePanel = { [weak self] in
             self?.togglePanel()
         }
