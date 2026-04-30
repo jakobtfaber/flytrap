@@ -12,7 +12,7 @@
   <a href="https://github.com/jakobtfaber/flytrap/actions/workflows/test.yml"><img alt="tests" src="https://github.com/jakobtfaber/flytrap/actions/workflows/test.yml/badge.svg"></a>
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey">
   <img alt="swift" src="https://img.shields.io/badge/swift-5.9-orange">
-  <img alt="status" src="https://img.shields.io/badge/status-personal_use-blue">
+  <img alt="license" src="https://img.shields.io/badge/license-MIT-green">
 </p>
 
 ---
@@ -147,4 +147,8 @@ Flytrap was originally a fork of [malecks/zoidberg](https://github.com/malecks/z
 
 ## License
 
-Private personal repository. No license is granted for redistribution. Original Zoidberg code by malecks is used under the terms of its [upstream license](https://github.com/malecks/zoidberg).
+[MIT](LICENSE).
+
+This project began as a fork of [malecks/zoidberg](https://github.com/malecks/zoidberg). The upstream repository has no explicit license file; this fork is published under MIT in good faith with attribution to the original author. If you are malecks or representing the original author and would like this arrangement changed, please open an issue.
+
+The Venus flytrap artwork in `assets/` is original to this repo, not derived from upstream.
