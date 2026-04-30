@@ -1,0 +1,61 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Only one CI run per branch in flight at a time. Newer pushes cancel
+# in-progress older runs on the same ref.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: swift test + xcodebuild
+    runs-on: macos-14
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Tool versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      # SwiftPM path. Validates Package.swift, runs the unit tests
+      # (XCTest target FlytrapTests; 30 tests, 3 intentionally skipped).
+      - name: swift test
+        run: swift test --enable-test-discovery
+
+      # Xcode path. Validates project.pbxproj is well-formed and
+      # the .app bundle still builds with all bundled resources
+      # (icns, menu-bar template image). Ad-hoc signed.
+      - name: xcodebuild Release
+        run: |
+          xcodebuild \
+            -project Flytrap.xcodeproj \
+            -scheme Flytrap \
+            -configuration Release \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      # Confirm the bundled resources actually landed in the .app
+      # — catches a class of pbxproj-resources-phase regressions
+      # that wouldn't fail the build itself.
+      - name: Verify bundled resources
+        run: |
+          set -euo pipefail
+          APP=build/Build/Products/Release/Flytrap.app
+          ls -la "$APP/Contents/Resources/"
+          test -f "$APP/Contents/Resources/Flytrap.icns"
+          test -f "$APP/Contents/Resources/MenubarIcon.tiff"
+          plutil -p "$APP/Contents/Info.plist" | grep -q 'CFBundleIdentifier" => "com.jakobfaber.flytrap"'
+          echo "all bundled resources present"

@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/jakobtfaber/flytrap/actions/workflows/test.yml"><img alt="tests" src="https://github.com/jakobtfaber/flytrap/actions/workflows/test.yml/badge.svg"></a>
   <img alt="platform" src="https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey">
   <img alt="swift" src="https://img.shields.io/badge/swift-5.9-orange">
   <img alt="status" src="https://img.shields.io/badge/status-personal_use-blue">
