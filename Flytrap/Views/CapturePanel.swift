@@ -83,15 +83,9 @@ struct CapturePanel: View {
             handleDrop(providers)
         }
         .background(
-            Group {
-                Button("") { appState.submitPrimary() }
-                    .keyboardShortcut(.return, modifiers: .command)
-                Button("") { appState.submitSecondary() }
-                    .keyboardShortcut(.return, modifiers: [.command, .shift])
-                Button("") { appState.cleanupWithClaude() }
-                    .keyboardShortcut("k", modifiers: .command)
-            }
-            .hidden()
+            Button("") { appState.cleanupWithClaude() }
+                .keyboardShortcut("k", modifiers: .command)
+                .hidden()
         )
         .onAppear {
             textInput = currentTextContent()

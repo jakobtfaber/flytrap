@@ -30,5 +30,7 @@
     <string>Flytrap needs Calendar access to add events captured in Agent mode to your iCloud Apple Calendar.</string>
     <key>NSCalendarsWriteOnlyAccessUsageDescription</key>
     <string>Flytrap needs Calendar access to add events captured in Agent mode to your iCloud Apple Calendar.</string>
+    <key>NSRemindersFullAccessUsageDescription</key>
+    <string>Flytrap needs Reminders access to add reminders captured in Agent mode to Apple Reminders.</string>
 </dict>
 </plist>

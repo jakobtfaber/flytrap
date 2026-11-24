@@ -620,46 +620,71 @@ final class AgentDispatchService: @unchecked Sendable {
         runDir: URL,
         env: [String: String]
     ) throws -> String {
-        guard let remindctlPath = resolveRemindctlPath() else {
+        let store = EKEventStore()
+        let status = EKEventStore.authorizationStatus(for: .reminder)
+        if status == .notDetermined {
+            let sem = DispatchSemaphore(value: 0)
+            var granted = false
+            store.requestFullAccessToReminders { ok, _ in
+                granted = ok
+                sem.signal()
+            }
+            _ = sem.wait(timeout: .now() + 20)
+            guard granted else {
+                throw NSError(domain: "Flytrap.Agent", code: 20, userInfo: [
+                    NSLocalizedDescriptionKey: "Reminders access denied. Allow Flytrap in System Settings > Privacy & Security > Reminders."
+                ])
+            }
+        } else if status != .fullAccess {
             throw NSError(domain: "Flytrap.Agent", code: 20, userInfo: [
-                NSLocalizedDescriptionKey: "remindctl not found at /opt/homebrew/bin/remindctl."
+                NSLocalizedDescriptionKey: "Reminders access not granted. Enable Flytrap in System Settings > Privacy & Security > Reminders."
             ])
         }
 
         let allowedLists = ["General", "Research", "Money", "Admin"]
         let listName = (item.list.flatMap { allowedLists.contains($0) ? $0 : nil }) ?? "General"
 
-        var args = ["add", "--title", title, "--list", listName]
-        if let notes = item.notes?.trimmingCharacters(in: .whitespacesAndNewlines), !notes.isEmpty {
-            args += ["--notes", notes]
-        }
-        if let due = item.due?.trimmingCharacters(in: .whitespacesAndNewlines), !due.isEmpty {
-            args += ["--due", due]
-        }
-        if let priority = item.priority?.lowercased(), ["low", "medium", "high"].contains(priority) {
-            args += ["--priority", priority]
-        }
-        args.append("--json")
+        let reminderCalendars = store.calendars(for: .reminder).filter { $0.allowsContentModifications }
+        let targetList = reminderCalendars.first(where: { $0.title.caseInsensitiveCompare(listName) == .orderedSame })
+            ?? store.defaultCalendarForNewReminders()
+            ?? reminderCalendars.first
 
-        let output = try runProcessToFiles(
-            executablePath: remindctlPath,
-            arguments: args,
-            environment: env,
-            workingDirectory: runDir,
-            stdoutURL: runDir.appendingPathComponent("exec-\(index)-stdout.log"),
-            stderrURL: runDir.appendingPathComponent("exec-\(index)-stderr.log"),
-            timeout: 30
-        )
-
-        guard !output.timedOut, output.exitCode == 0 else {
-            let reason = output.stderr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let targetList = targetList else {
             throw NSError(domain: "Flytrap.Agent", code: 21, userInfo: [
-                NSLocalizedDescriptionKey: reason.isEmpty ? "remindctl exited \(output.exitCode)" : reason
+                NSLocalizedDescriptionKey: "No writable Apple Reminders list found."
             ])
         }
 
-        let dueSuffix = (item.due?.isEmpty == false) ? " · \(item.due!)" : ""
-        return "Reminder: \(title) (\(listName)\(dueSuffix))"
+        let reminder = EKReminder(eventStore: store)
+        reminder.calendar = targetList
+        reminder.title = title
+        if let notes = item.notes?.trimmingCharacters(in: .whitespacesAndNewlines), !notes.isEmpty {
+            reminder.notes = notes
+        }
+        switch item.priority?.lowercased() {
+        case "high": reminder.priority = 1
+        case "medium": reminder.priority = 5
+        case "low": reminder.priority = 9
+        default: reminder.priority = 0
+        }
+
+        var dueSuffix = ""
+        if let dueStr = item.due?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !dueStr.isEmpty,
+           let dueDate = parseLocalDate(dueStr) {
+            let cal = Calendar.current
+            let isDateOnly = dueStr.count <= 10
+            if isDateOnly {
+                reminder.dueDateComponents = cal.dateComponents([.year, .month, .day], from: dueDate)
+            } else {
+                reminder.dueDateComponents = cal.dateComponents([.year, .month, .day, .hour, .minute], from: dueDate)
+                reminder.addAlarm(EKAlarm(absoluteDate: dueDate))
+            }
+            dueSuffix = " · \(dueStr)"
+        }
+
+        try store.save(reminder, commit: true)
+        return "Reminder: \(title) (\(targetList.title)\(dueSuffix))"
     }
 
     static func selectTargetCalendar(

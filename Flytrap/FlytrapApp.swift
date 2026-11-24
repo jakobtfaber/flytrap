@@ -132,8 +132,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         editKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self = self,
                   self.isPanelVisible,
-                  event.modifierFlags.intersection(.deviceIndependentFlagsMask).contains(.command),
-                  let chars = event.charactersIgnoringModifiers else {
+                  !(self.settingsWindow?.isKeyWindow ?? false) else {
+                return event
+            }
+
+            let mods = event.modifierFlags.intersection([.command, .shift, .option, .control])
+            guard mods.contains(.command) else {
+                return event
+            }
+
+            let isReturnKey = event.keyCode == 36
+                || event.keyCode == 76
+                || event.charactersIgnoringModifiers == "\r"
+                || event.charactersIgnoringModifiers == "\n"
+                || event.charactersIgnoringModifiers == "\u{03}"
+
+            if isReturnKey {
+                if mods == [.command, .shift] {
+                    self.appState.submitSecondary()
+                    return nil
+                }
+                if mods == .command {
+                    self.appState.submitPrimary()
+                    return nil
+                }
+            }
+
+            guard let chars = event.charactersIgnoringModifiers?.lowercased() else {
                 return event
             }
 
@@ -149,7 +174,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             case "v": textView.paste(nil); return nil
             case "x": textView.cut(nil); return nil
             case "z":
-                if event.modifierFlags.contains(.shift) {
+                if mods.contains(.shift) {
                     textView.undoManager?.redo()
                 } else {
                     textView.undoManager?.undo()
