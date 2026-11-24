@@ -37,6 +37,26 @@ enum AppSettings {
         set { defaults.set(newValue, forKey: "dictateHotkey") }
     }
 
+    static var agentPanelHotkey: String {
+        get { defaults.string(forKey: "agentPanelHotkey") ?? "ctrl+opt+space" }
+        set { defaults.set(newValue, forKey: "agentPanelHotkey") }
+    }
+
+    static var agyBinaryPath: String {
+        get { defaults.string(forKey: "agyBinaryPath") ?? "\(NSHomeDirectory())/.local/bin/agy" }
+        set { defaults.set(newValue, forKey: "agyBinaryPath") }
+    }
+
+    static var agyModel: String? {
+        get { defaults.string(forKey: "agyModel") }
+        set { defaults.set(newValue, forKey: "agyModel") }
+    }
+
+    static var agyEffort: String {
+        get { defaults.string(forKey: "agyEffort") ?? "low" }
+        set { defaults.set(newValue, forKey: "agyEffort") }
+    }
+
     static var autoCloseEnabled: Bool {
         get { defaults.object(forKey: "autoCloseEnabled") as? Bool ?? true }
         set { defaults.set(newValue, forKey: "autoCloseEnabled") }

@@ -22,6 +22,7 @@ final class MacOSDictationService: NSObject, TranscriptionProvider {
     private let audioEngine = AVAudioEngine()
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
+    private var pendingCleanupWorkItem: DispatchWorkItem?
     private var lastLevelTime: CFAbsoluteTime = 0
 
     private(set) var isListening = false
@@ -101,17 +102,22 @@ final class MacOSDictationService: NSObject, TranscriptionProvider {
     }
 
     func stopListening() {
-        // End the audio stream gracefully so the recognizer can finalize
+        // End the audio stream gracefully so the recognizer can finalize.
         recognitionRequest?.endAudio()
 
-        // Give the recognizer a moment to produce a final result,
-        // then clean up
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        // Allow up to 1.5s for the final transcript; cleanupAudio() also runs
+        // immediately once result.isFinal arrives.
+        pendingCleanupWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
             self?.cleanupAudio()
         }
+        pendingCleanupWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5, execute: workItem)
     }
 
     private func cleanupAudio() {
+        pendingCleanupWorkItem?.cancel()
+        pendingCleanupWorkItem = nil
         if audioEngine.isRunning {
             audioEngine.stop()
         }

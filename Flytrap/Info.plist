@@ -26,5 +26,9 @@
     <string>Flytrap needs microphone access to transcribe your voice notes.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>Flytrap uses speech recognition to transcribe your dictated notes.</string>
+    <key>NSCalendarsFullAccessUsageDescription</key>
+    <string>Flytrap needs Calendar access to add events captured in Agent mode to your iCloud Apple Calendar.</string>
+    <key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+    <string>Flytrap needs Calendar access to add events captured in Agent mode to your iCloud Apple Calendar.</string>
 </dict>
 </plist>

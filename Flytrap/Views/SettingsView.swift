@@ -7,6 +7,9 @@ struct SettingsView: View {
     @State private var launchAtLogin = AppSettings.launchAtLogin
     @State private var autoCloseEnabled = AppSettings.autoCloseEnabled
     @State private var autoCloseSeconds = AppSettings.autoCloseSeconds
+    @State private var agyBinaryPath = AppSettings.agyBinaryPath
+    @State private var agyModel = AppSettings.agyModel ?? ""
+    @State private var agyEffort = AppSettings.agyEffort
 
     enum ConnectionStatus {
         case unknown, testing, connected, failed
@@ -71,6 +74,27 @@ struct SettingsView: View {
                     }
                 }
             }
+            Section("Antigravity Agent (Reminders / Calendar)") {
+                HStack {
+                    Circle()
+                        .fill(AgentDispatchService.resolveBinaryPath(configuredPath: agyBinaryPath) != nil ? Color.green : Color.red)
+                        .frame(width: 8, height: 8)
+                    TextField("agy CLI path", text: $agyBinaryPath)
+                        .font(.system(size: 12, design: .monospaced))
+                        .textFieldStyle(.roundedBorder)
+                }
+                Picker("Reasoning effort", selection: $agyEffort) {
+                    Text("Low (recommended)").tag("low")
+                    Text("Medium").tag("medium")
+                    Text("High").tag("high")
+                }
+                TextField("Model override (optional)", text: $agyModel)
+                    .font(.system(size: 12, design: .monospaced))
+                    .textFieldStyle(.roundedBorder)
+                Text("⌃⌥Space opens Agent mode · ⌘⇧↩ sends from Vault mode")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
             Section("General") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                 Toggle("Auto-close after inactivity", isOn: $autoCloseEnabled)
@@ -87,9 +111,19 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 400, height: 320)
+        .frame(width: 440, height: 470)
         .onChange(of: vaultPath) { _, newValue in
             AppSettings.vaultPath = newValue
+        }
+        .onChange(of: agyBinaryPath) { _, newValue in
+            AppSettings.agyBinaryPath = newValue
+        }
+        .onChange(of: agyEffort) { _, newValue in
+            AppSettings.agyEffort = newValue
+        }
+        .onChange(of: agyModel) { _, newValue in
+            let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            AppSettings.agyModel = trimmed.isEmpty ? nil : trimmed
         }
         .onChange(of: launchAtLogin) { _, newValue in
             AppSettings.launchAtLogin = newValue

@@ -77,7 +77,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         appState.onStopDictation = { [weak self] in
             guard let self = self, self.transcriptionService.isListening else { return }
             self.transcriptionService.stopListening()
-            self.appState.stopDictation()
         }
 
         // Add Edit menu so copy/paste/cut work in text fields
@@ -93,12 +92,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         NSApp.mainMenu = mainMenu
 
         hotkeyManager.onTogglePanel = { [weak self] in
-            self?.togglePanel()
+            self?.togglePanelInMode(.vault)
         }
         hotkeyManager.onToggleDictation = { [weak self] in
             self?.toggleDictation()
         }
+        hotkeyManager.onToggleAgentPanel = { [weak self] in
+            self?.togglePanelInMode(.agent)
+        }
         hotkeyManager.register()
+        AgentDispatchService.requestNotificationPermissionIfBundled()
 
         escapeMonitor.onTap = { [weak self] in
             self?.hidePanel()
@@ -164,9 +167,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return
         }
 
-        if isPanelVisible {
-            hidePanel()
+        togglePanelInMode(.vault)
+    }
+
+    @objc private func openAgentPanelFromMenu() {
+        appState.captureMode = .agent
+        if !isPanelVisible {
+            showPanel()
         } else {
+            appState.resetIdle(showHint: appState.hasContent)
+        }
+    }
+
+    private func togglePanelInMode(_ mode: CaptureMode) {
+        if isPanelVisible {
+            if appState.captureMode != mode {
+                appState.captureMode = mode
+                appState.resetIdle(showHint: appState.hasContent)
+            } else {
+                hidePanel()
+            }
+        } else {
+            appState.captureMode = mode
             showPanel()
         }
     }
@@ -211,7 +233,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func hidePanel() {
         if transcriptionService.isListening {
             transcriptionService.stopListening()
-            appState.stopDictation()
+            appState.beginStoppingDictation()
         }
         NSAnimationContext.runAnimationGroup({ ctx in
             ctx.duration = 0.15
@@ -233,7 +255,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         if transcriptionService.isListening {
             transcriptionService.stopListening()
             Task { @MainActor in
-                appState.stopDictation()
+                appState.beginStoppingDictation()
             }
         } else {
             Task { @MainActor in
@@ -257,6 +279,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     private func showContextMenu() {
         let menu = NSMenu()
+        menu.addItem(NSMenuItem(title: "New Reminder / Calendar (⌃⌥Space)", action: #selector(openAgentPanelFromMenu), keyEquivalent: ""))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Settings...", action: #selector(openSettings), keyEquivalent: ","))
         menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit Flytrap", action: #selector(quit), keyEquivalent: "q"))
@@ -278,7 +302,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
         window.title = "Flytrap Settings"
         window.styleMask = [.titled, .closable]
-        window.setContentSize(NSSize(width: 400, height: 300))
+        window.setContentSize(NSSize(width: 440, height: 470))
         window.center()
         window.delegate = self
         settingsWindow = window

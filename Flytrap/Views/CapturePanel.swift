@@ -6,6 +6,7 @@ struct CapturePanel: View {
     @State private var escapeHoldTimer: Timer?
     @State private var isHoldingEscape = false
     @State private var micHover = false
+    @State private var modeHover = false
     @State private var borderRotation: Double = -0.5
     @State private var borderOpacity: Double = 0
     var onToggleDictation: (() -> Void)?
@@ -41,12 +42,19 @@ struct CapturePanel: View {
         .overlay(
             ZStack {
                 LinearGradient(
-                    colors: [
-                        Color.purple.opacity(0.4),
-                        Color.purple.opacity(0.05),
-                        Color.blue.opacity(0.3),
-                        Color.purple.opacity(0.05),
-                    ],
+                    colors: appState.captureMode == .agent
+                        ? [
+                            Color.cyan.opacity(0.55),
+                            Color.cyan.opacity(0.08),
+                            Color.blue.opacity(0.45),
+                            Color.teal.opacity(0.1),
+                        ]
+                        : [
+                            Color.purple.opacity(0.4),
+                            Color.purple.opacity(0.05),
+                            Color.blue.opacity(0.3),
+                            Color.purple.opacity(0.05),
+                        ],
                     startPoint: UnitPoint(x: borderRotation - 0.5, y: 0),
                     endPoint: UnitPoint(x: borderRotation + 0.5, y: 1)
                 )
@@ -76,8 +84,10 @@ struct CapturePanel: View {
         }
         .background(
             Group {
-                Button("") { appState.save() }
+                Button("") { appState.submitPrimary() }
                     .keyboardShortcut(.return, modifiers: .command)
+                Button("") { appState.submitSecondary() }
+                    .keyboardShortcut(.return, modifiers: [.command, .shift])
                 Button("") { appState.cleanupWithClaude() }
                     .keyboardShortcut("k", modifiers: .command)
             }
@@ -125,7 +135,7 @@ struct CapturePanel: View {
 
     private var footer: some View {
         HStack(spacing: 8) {
-            Image(systemName: "cpu")
+            Image(systemName: appState.captureMode == .agent ? "bell.badge.fill" : "cpu")
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(statusColor)
             
@@ -133,6 +143,8 @@ struct CapturePanel: View {
                 Text(status)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(statusColor)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                     .transition(.opacity)
             }
             
@@ -142,6 +154,35 @@ struct CapturePanel: View {
                 AudioWaveView(level: appState.audioLevel)
                     .transition(.opacity)
             }
+
+            Button(action: { appState.toggleCaptureMode() }) {
+                HStack(spacing: 4) {
+                    Image(systemName: appState.captureMode == .agent ? "sparkles" : "doc.text")
+                        .font(.system(size: 10, weight: .semibold))
+                    Text(appState.captureMode == .agent ? "Agent" : "Vault")
+                        .font(.system(size: 11, weight: .medium))
+                }
+                .foregroundColor(
+                    appState.captureMode == .agent
+                        ? .cyan
+                        : (modeHover ? .white : .white.opacity(0.55))
+                )
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(
+                            appState.captureMode == .agent
+                                ? Color.cyan.opacity(0.16)
+                                : (modeHover ? Color.white.opacity(0.12) : Color.white.opacity(0.06))
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+            .help(appState.captureMode == .agent
+                  ? "Agent mode: ⌘↩ sends to Antigravity (Reminders / Calendar / TaskNotes). Click to switch to Vault."
+                  : "Vault mode: ⌘↩ saves to Obsidian · ⌘⇧↩ sends to Antigravity. Click to switch to Agent mode.")
+            .onHover { modeHover = $0 }
 
             Button(action: { onToggleDictation?() }) {
                 Image(systemName: "mic.fill")
@@ -158,6 +199,7 @@ struct CapturePanel: View {
             .onHover { micHover = $0 }
         }
         .animation(.easeInOut(duration: 0.2), value: appState.isDictating)
+        .animation(.easeInOut(duration: 0.2), value: appState.captureMode)
         .animation(.easeInOut(duration: 0.5), value: statusText)
         .animation(.easeInOut(duration: 0.5), value: appState.isIdle)
         .padding(.vertical, 12)
@@ -174,14 +216,20 @@ struct CapturePanel: View {
         if appState.isDragOver {
             return "Drop here"
         }
-        if appState.toastMessage != nil {
-            return appState.toastIsError ? "Error" : "Saved"
+        if let toast = appState.toastMessage {
+            return toast
+        }
+        if appState.isFinalizingDictation {
+            return "Finalizing dictation..."
         }
         if appState.isDictating {
             return "Listening"
         }
         if appState.isIdle && appState.hasContent {
-            return "Press ⌘ ↩ to save"
+            return appState.captureMode == .agent ? "⌘↩ send to agent" : "⌘↩ save · ⌘⇧↩ agent"
+        }
+        if appState.captureMode == .agent {
+            return "Reminders / Calendar"
         }
         return nil
     }
@@ -192,7 +240,8 @@ struct CapturePanel: View {
         if appState.isDragOver { return .blue }
         if appState.toastMessage != nil { return appState.toastIsError ? .red : .green }
         if appState.isDictating { return .red }
-        if appState.isIdle { return .green }
+        if appState.isIdle { return appState.captureMode == .agent ? .cyan : .green }
+        if appState.captureMode == .agent { return .cyan.opacity(0.9) }
         return .white.opacity(0.85)
     }
 

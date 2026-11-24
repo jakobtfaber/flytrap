@@ -22,6 +22,7 @@ Flytrap is a macOS menu-bar app for capturing thoughts straight into an Obsidian
 ## Features
 
 - **Hotkey-driven capture panel.** A floating panel that appears above all spaces and full-screen apps. Toggle on, type or paste, save, dismiss.
+- **Antigravity Agent mode (Reminders, Calendar & TaskNotes).** Press `Ctrl+Option+Space` to open directly in Agent mode (or press `Cmd+Shift+Return` from Vault mode) to send a messy jot straight to `agy` in the background. Flytrap dismisses immediately, cleans up the note, adds it to Apple Reminders (`remindctl`), Apple Calendar (iCloud), or TaskNotes, and posts a macOS notification with what was created.
 - **Voice dictation.** A second hotkey toggles Apple's `SFSpeechRecognizer` to transcribe what you say into the panel as you speak.
 - **Multi-modal entries.** Text, voice notes, dropped/pasted images and videos, and links are all captured as a single session.
 - **Optional Claude cleanup.** With an Anthropic API key set in Settings, a one-click button reformats messy dictation into clean prose before save.
@@ -33,8 +34,11 @@ Flytrap is a macOS menu-bar app for capturing thoughts straight into an Obsidian
 
 | Key | Action |
 |---|---|
-| `Ctrl+Space` | Toggle capture panel |
+| `Ctrl+Space` | Toggle capture panel (Vault mode) |
+| `Ctrl+Option+Space` | Toggle capture panel in Agent mode (Reminders / Calendar / TaskNotes) |
 | `Ctrl+Shift+Space` | Toggle voice dictation |
+| `Cmd+Return` | Submit to active mode (Vault or Agent) |
+| `Cmd+Shift+Return` | Submit to alternate mode (Agent from Vault, or Vault from Agent) |
 | `Esc` (tap) | Close panel |
 | `Esc` (hold ~1.5s) | Discard current draft |
 
